@@ -10,6 +10,11 @@
 # Ngoại trừ file mapping nếu bạn coi nó là một phần của logic
 !mapping.csv
 
+# Không đẩy thư mục chứa raw data
+log_search/
+log_content/
+
+
 # --- LOGS ---
 # Giữ các file log ở local để debug
 *.log
