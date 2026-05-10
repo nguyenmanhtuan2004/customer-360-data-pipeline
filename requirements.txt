@@ -1,0 +1,16 @@
+# Core Spark & Environment
+pyspark==4.1.1
+findspark
+
+# Data Processing
+pandas
+pyarrow
+db-dtypes
+
+# Google Cloud Services
+pandas-gbq
+google-auth
+google-cloud-aiplatform
+
+# Utilities
+requests
