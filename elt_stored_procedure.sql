@@ -1,12 +1,19 @@
 CREATE OR REPLACE PROCEDURE `cms_data_warehouse.sp_olap_content`()
 BEGIN
   DECLARE max_date INT64;
+  DECLARE min_date INT64;
 
   -- Chỉ đọc đến date mới nhất, không đọc tương lai
   SET max_date = (
     SELECT MAX(date_key)
     FROM `cms_data_warehouse.fact_customer_360`
     WHERE data_source = 'log_content'
+  );
+
+  -- Tính ngày đầu tiên của tháng trước (vd: max_date=20220714 -> 20220601)
+  SET min_date = CAST(
+    FORMAT_DATE('%Y%m%d', DATE_TRUNC(DATE_SUB(PARSE_DATE('%Y%m%d', CAST(max_date AS STRING)), INTERVAL 1 MONTH), MONTH)) 
+    AS INT64
   );
 
   -- 1. Category giữ chân user tốt nhất
@@ -23,7 +30,7 @@ BEGIN
   FROM `cms_data_warehouse.fact_customer_360`
   WHERE data_source = 'log_content'
     AND MostWatch IS NOT NULL
-    AND date_key <= max_date  -- chỉ đọc đến ngày mới nhất
+    AND date_key BETWEEN min_date AND max_date  -- chỉ lấy data từ đầu tháng trước đến hiện tại
   GROUP BY MostWatch
   ORDER BY TiLe_TrungThanh DESC;
 
@@ -41,7 +48,7 @@ BEGIN
   WHERE data_source = 'log_content'
     AND MostWatch IS NOT NULL
     AND Taste IS NOT NULL
-    AND date_key <= max_date
+    AND date_key BETWEEN min_date AND max_date
   GROUP BY MostWatch, Taste
   ORDER BY MostWatch, PhanTram_TrongCategory DESC;
 
@@ -58,7 +65,7 @@ BEGIN
   WHERE data_source = 'log_content'
     AND Active = 'High'
     AND Taste IS NOT NULL
-    AND date_key <= max_date
+    AND date_key BETWEEN min_date AND max_date
   GROUP BY MostWatch
   ORDER BY TongUser DESC;
 
@@ -68,11 +75,18 @@ END;
 CREATE OR REPLACE PROCEDURE `cms_data_warehouse.sp_olap_search`()
 BEGIN
   DECLARE max_date INT64;
+  DECLARE min_date INT64;
 
   SET max_date = (
     SELECT MAX(date_key)
     FROM `cms_data_warehouse.fact_customer_360`
     WHERE data_source = 'log_search'
+  );
+
+  -- Tính ngày đầu tiên của tháng trước
+  SET min_date = CAST(
+    FORMAT_DATE('%Y%m%d', DATE_TRUNC(DATE_SUB(PARSE_DATE('%Y%m%d', CAST(max_date AS STRING)), INTERVAL 1 MONTH), MONTH)) 
+    AS INT64
   );
 
   -- 4. Tăng trưởng search (So sánh Tháng hiện tại vs Tháng trước)
@@ -91,7 +105,7 @@ BEGIN
   WHERE data_source = 'log_search'
     AND category_prev IS NOT NULL
     AND category_curr IS NOT NULL
-    AND date_key <= max_date
+    AND date_key BETWEEN min_date AND max_date
   GROUP BY category_prev
   ORDER BY PhanTram_TangTruong DESC;
 
@@ -110,7 +124,7 @@ BEGIN
     AND Trending_Type = 'Changed' -- Chỉ lấy những user có sự thay đổi
     AND category_prev IS NOT NULL
     AND category_curr IS NOT NULL
-    AND date_key <= max_date
+    AND date_key BETWEEN min_date AND max_date
   GROUP BY category_prev, category_curr
   ORDER BY TongUser DESC;
 

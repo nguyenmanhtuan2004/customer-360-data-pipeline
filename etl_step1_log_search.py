@@ -227,18 +227,26 @@ def extract_unique_keywords(result_df,
                             col_prev="most_searched_prev", 
                             col_count_prev="count_prev",
                             col_curr="most_searched_curr", 
-                            limit_prev=1000,
-                            limit_curr=1000):
-    """Trích xuất keyword: Tháng trước có sort theo popularity, Tháng sau giữ nguyên thứ tự."""
+                            limit_prev=2000,
+                            limit_curr=2000,
+                            offset_prev=1000,
+                            offset_curr=1000):
+    """Trích xuất keyword: Lấy các dòng tiếp theo (bỏ qua offset) bằng cách dùng Window function."""
+    
+    # Tháng trước: tính tổng, sort theo popularity (giảm dần) và lấy theo offset & limit
+    window_prev = Window.orderBy(F.desc("total"))
     top_prev = (result_df.select(col_prev, col_count_prev)
                       .groupBy(col_prev)
                       .agg(F.sum(col_count_prev).alias("total"))
-                      .orderBy(F.desc("total"))
-                      .limit(limit_prev)
+                      .withColumn("rn", F.row_number().over(window_prev))
+                      .filter((F.col("rn") > offset_prev) & (F.col("rn") <= offset_prev + limit_prev))
                       .select(F.col(col_prev).alias("keyword")))
     
+    # Tháng sau: giữ nguyên thứ tự tự nhiên (dùng monotonically_increasing_id)
+    window_curr = Window.orderBy(F.monotonically_increasing_id())
     top_curr = (result_df.select(col_curr)
-                      .limit(limit_curr)
+                      .withColumn("rn", F.row_number().over(window_curr))
+                      .filter((F.col("rn") > offset_curr) & (F.col("rn") <= offset_curr + limit_curr))
                       .select(F.col(col_curr).alias("keyword")))
     
     return top_prev.union(top_curr).distinct()
