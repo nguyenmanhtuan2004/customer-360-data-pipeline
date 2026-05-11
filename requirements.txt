@@ -14,3 +14,8 @@ google-cloud-aiplatform
 
 # Utilities
 requests
+
+# Web Dashboard (Streamlit)
+streamlit
+plotly
+google-cloud-bigquery

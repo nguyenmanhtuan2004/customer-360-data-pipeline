@@ -54,11 +54,11 @@ def main():
     print("====================================")
     
     # 1. Fact Table (APPEND)
-    load_parquet_to_bigquery("Fact_Customer_360.parquet", f"{dataset_name}.fact_customer_360", credentials, mode='append')
+    load_parquet_to_bigquery("Fact_Customer_360.parquet", f"{dataset_name}.fact_customer_360", credentials, mode='replace')
     
     # 2. Dimensions (APPEND - Chứa dữ liệu thay đổi theo thời gian/từng đợt)
-    load_parquet_to_bigquery("Dim_User.parquet", f"{dataset_name}.dim_user", credentials, mode='append')
-    load_parquet_to_bigquery("Dim_Cust.parquet", f"{dataset_name}.dim_cust", credentials, mode='append')
+    load_parquet_to_bigquery("Dim_User.parquet", f"{dataset_name}.dim_user", credentials, mode='replace')
+    load_parquet_to_bigquery("Dim_Cust.parquet", f"{dataset_name}.dim_cust", credentials, mode='replace')
     
     # 3. Reference Dimensions (REPLACE - Bảng tham chiếu tĩnh, ghi đè để cập nhật mới nhất)
     load_parquet_to_bigquery("Dim_Service.parquet", f"{dataset_name}.dim_service", credentials, mode='replace')

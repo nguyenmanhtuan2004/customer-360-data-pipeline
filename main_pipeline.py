@@ -95,7 +95,7 @@ def main():
     run_script("etl_step1_log_content.py", f"--start {content_start} --end {content_end}")
     
     # STEP 2: Data Modeling (Star Schema)
-    run_script("etl_step2_obt_concat_model.py")
+    run_script("etl_step2_obt_concat_model.py", f"--end {search_end}")
     
     # STEP 3: Nạp lên Google BigQuery
     run_script("etl_step3_load_to_bigquery.py")

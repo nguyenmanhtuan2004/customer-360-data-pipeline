@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import os
 import sys
+import argparse
 
 # --- ĐỒNG BỘ PHIÊN BẢN PYTHON CHO SPARK ---
 os.environ['PYSPARK_PYTHON'] = sys.executable
@@ -105,9 +106,9 @@ def create_dim_date(spark, start="2022-06-01", end="2022-07-31"):
         "month_name", "quarter", "day_of_week"
     ])
 
-def create_fact_customer_360(df_obt, dim_service):
+def create_fact_customer_360(df_obt, dim_service, snapshot_date_key=20220731):
     """Tạo Fact_Customer_360 từ OBT và mapping service."""
-    print("Đang tạo Fact_Customer_360...")
+    print(f"Đang tạo Fact_Customer_360 với date_key={snapshot_date_key}...")
     # Chuẩn hóa tên cột nếu có typo từ Step 1
     if "MostWacth" in df_obt.columns:
         df_obt = df_obt.withColumnRenamed("MostWacth", "MostWatch")
@@ -120,7 +121,7 @@ def create_fact_customer_360(df_obt, dim_service):
     
     return df_obt.join(F.broadcast(service_lookup), df_obt["MostWatch"] == service_lookup["Type"], "left") \
                  .drop("Type") \
-                 .withColumn("date_key", F.lit(20220731))
+                 .withColumn("date_key", F.lit(snapshot_date_key))
 
 def save_star_schema(fact, d_user, d_cust, d_service, d_date):
     """Lưu tất cả các bảng ra định dạng Parquet (Parallel Write)."""
@@ -132,6 +133,12 @@ def save_star_schema(fact, d_user, d_cust, d_service, d_date):
     d_date.write.mode("overwrite").parquet(OUTPUT_DIM_DATE)
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--end", type=str, default="20220714", help="Snapshot date key (YYYYMMDD)")
+    args = parser.parse_args()
+    
+    snapshot_date_key = int(args.end)
+
     spark = get_spark_session()
 
     # ETL Pipeline
@@ -143,7 +150,7 @@ def main():
     dim_service = create_dim_service(spark)
     dim_date = create_dim_date(spark)
     
-    fact_customer_360 = create_fact_customer_360(df_obt, dim_service)
+    fact_customer_360 = create_fact_customer_360(df_obt, dim_service, snapshot_date_key)
     
     # Validation & Save
     if fact_customer_360.count() > 0:

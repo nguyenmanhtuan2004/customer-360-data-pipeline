@@ -76,6 +76,8 @@ CREATE OR REPLACE PROCEDURE `cms_data_warehouse.sp_olap_search`()
 BEGIN
   DECLARE max_date INT64;
   DECLARE min_date INT64;
+  DECLARE max_day_of_month INT64;
+  DECLARE days_in_prev_month INT64;
 
   SET max_date = (
     SELECT MAX(date_key)
@@ -89,17 +91,27 @@ BEGIN
     AS INT64
   );
 
-  -- 4. Tăng trưởng search (So sánh Tháng hiện tại vs Tháng trước)
+  -- Tính số ngày đã có data của tháng hiện tại (VD: max_date=20220714 -> 14 ngày)
+  SET max_day_of_month = EXTRACT(DAY FROM PARSE_DATE('%Y%m%d', CAST(max_date AS STRING)));
+  
+  -- Tính tổng số ngày của tháng trước (VD: Tháng 6 có 30 ngày)
+  SET days_in_prev_month = EXTRACT(DAY FROM LAST_DAY(PARSE_DATE('%Y%m%d', CAST(min_date AS STRING))));
+
+  -- 4. Tăng trưởng search (So sánh TỐC ĐỘ TRUNG BÌNH NGÀY - Run Rate)
   CREATE OR REPLACE TABLE `cms_data_warehouse.olap_search_growth` AS
   SELECT
     category_prev                                                   AS Category,
     CAST(SUM(count_prev) AS BIGINT)                                 AS LuotTimKiem_ThangTruoc,
     CAST(SUM(count_curr) AS BIGINT)                                 AS LuotTimKiem_ThangNay,
-    CAST(SUM(count_curr) AS BIGINT) 
-      - CAST(SUM(count_prev) AS BIGINT)                             AS TangTruong,
+    CAST(SUM(count_curr) AS BIGINT) - CAST(SUM(count_prev) AS BIGINT) AS TangTruong,
+    -- Tính Trung bình mỗi ngày của tháng này
+    ROUND(SUM(count_curr) / NULLIF(max_day_of_month, 0), 2)         AS TB_MoiNgay_ThangNay,
+    -- Tính Trung bình mỗi ngày của tháng trước
+    ROUND(SUM(count_prev) / NULLIF(days_in_prev_month, 0), 2)       AS TB_MoiNgay_ThangTruoc,
+    -- Phần trăm tăng trưởng dựa trên Tốc độ trung bình (Apples-to-Apples)
     ROUND(
-      (CAST(SUM(count_curr) AS BIGINT) - CAST(SUM(count_prev) AS BIGINT))
-      * 100.0 / NULLIF(CAST(SUM(count_prev) AS BIGINT), 0)
+      ( (SUM(count_curr) / NULLIF(max_day_of_month, 0)) - (SUM(count_prev) / NULLIF(days_in_prev_month, 0)) )
+      * 100.0 / NULLIF((SUM(count_prev) / NULLIF(days_in_prev_month, 0)), 0)
     , 2)                                                            AS PhanTram_TangTruong
   FROM `cms_data_warehouse.fact_customer_360`
   WHERE data_source = 'log_search'
