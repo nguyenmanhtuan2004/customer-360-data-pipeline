@@ -381,14 +381,15 @@ CALL `bigdata-mapping.cms_data_warehouse.Calculate_Marketing_Report`();
 ### 🔹 Step 5: Dashboard — Power BI
 **File:** `dashboard_marketing.pbix`
 
-#### Các trang dashboard:
+#### Các trang dashboard đề xuất & Cấu hình Visual:
 
-| Trang | Nội dung | Nguồn dữ liệu (OLAP Table) |
-|-------|----------|----------------|
-| **Trang 1: Loyalty** | Tỷ lệ user trung thành theo từng thể loại | `olap_category_loyalty` |
-| **Trang 2: Content Taste** | Chi tiết bộ từ khóa/sở thích trong từng Category | `olap_category_taste` |
-| **Trang 3: Growth & Migration** | Tăng trưởng tìm kiếm và sự dịch chuyển sở thích | `olap_search_growth`, `olap_interest_migration` |
-| **Trang 4: Power User** | Chân dung nhóm người dùng High Active | `olap_power_user_profile` |
+| Trang | Nguồn dữ liệu (OLAP Table) | Ý nghĩa nghiệp vụ | Biểu đồ khuyên dùng (Power BI) |
+|-------|----------------|-------------------|--------------------------------|
+| **Trang 1: Loyalty & Retention** | `olap_category_loyalty` | Thể loại nào đang giữ chân user tốt nhất? Số lượng user có nguy cơ rời bỏ (Low Active) là bao nhiêu? | - **100% Stacked Bar Chart:** Trục Y là Category, Trục X là `UserTrungThanh` và `UserNguyCo` (xem tỷ lệ).<br>- **Line and Stacked Column Chart:** Cột là `TongUser`, Đường là `TiLe_TrungThanh` (xem quy mô vs chất lượng). |
+| **Trang 2: Content Taste Breakdown** | `olap_category_taste` | Đi sâu vào từng Category, ví dụ trong Phim Truyện thì người dùng chuộng phim Hàn, Trung hay Hành động? | - **Treemap / Matrix:** Thể hiện phân cấp (Hierarchy) từ Category xuống Taste.<br>- **Donut Chart:** Tỷ trọng `PhanTram_TrongCategory`. |
+| **Trang 3: Power User Insights** | `olap_power_user_profile` | Nhóm khách hàng VIP (Active = High) mang lại nhiều giá trị nhất đang xem nội dung gì? | - **Clustered Bar Chart:** So sánh `TongUser` theo `MostWatch`.<br>- **Card:** Hiển thị tổng số Power User. |
+| **Trang 4: Search Growth** | `olap_search_growth` | Mức độ quan tâm của người dùng đang tăng lên hay giảm đi ở từng thể loại qua 2 tháng liên tiếp? | - **Waterfall Chart:** Xem mức độ tăng/giảm (`TangTruong`) của từng thể loại.<br>- **Clustered Column Chart:** So sánh trực quan `ThangTruoc` và `ThangNay`. |
+| **Trang 5: Interest Migration** | `olap_interest_migration` | Người dùng chán một thể loại thì họ sẽ chuyển sang xem thể loại nào tiếp theo? | - **Sankey Diagram** (Tải thêm từ Get more visuals) hoặc **Ribbon Chart**: Vẽ dòng chảy từ `RoiKhoi` sang `ChuyenSang`.<br>- **Matrix:** Chi tiết số lượng user dịch chuyển. |
 
 #### Kết nối dữ liệu:
 - **Option A (BigQuery):** Power BI → Get Data → Google BigQuery → Direct Query
