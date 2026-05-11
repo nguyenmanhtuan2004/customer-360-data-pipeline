@@ -2,6 +2,8 @@
 
 Tài liệu này hướng dẫn cách chạy toàn bộ hệ thống xử lý dữ liệu từ Log thô đến Star Schema và Dashboard, ngay cả khi bạn không cài đặt Spark/Java trên máy.
 
+**🌐 Live Dashboard (Streamlit Cloud):** [https://customer-360-data-pipeline-gnqmpymbhbtsoxs3dnbk4n.streamlit.app/](https://customer-360-data-pipeline-gnqmpymbhbtsoxs3dnbk4n.streamlit.app/)
+
 ---
 
 ## 🛠 1. Chuẩn bị (Prerequisites)

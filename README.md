@@ -4,6 +4,8 @@ Dự án Data Engineering End-to-End xây dựng luồng dữ liệu (Data Pipel
 
 Dự án mô phỏng môi trường dữ liệu thực tế tại các công ty Truyền hình/Giải trí trực tuyến (OTT), tự động hóa toàn bộ quy trình từ lúc thu thập Log thô đến khi hiển thị Dashboard trên Web.
 
+**🌐 Live Dashboard (Streamlit Cloud):** [https://customer-360-data-pipeline-gnqmpymbhbtsoxs3dnbk4n.streamlit.app/](https://customer-360-data-pipeline-gnqmpymbhbtsoxs3dnbk4n.streamlit.app/)
+
 ## 📐 Kiến trúc hệ thống (Architecture)
 
 ```mermaid
