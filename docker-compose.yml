@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  # Dịch vụ chạy Pipeline ETL
+  pipeline:
+    build: .
+    image: spark-4-pipeline:latest
+    volumes:
+      - .:/app
+      - ./bigdata-mapping-b6ba7074c7d7.json:/app/bigdata-mapping-b6ba7074c7d7.json
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/bigdata-mapping-b6ba7074c7d7.json
+    command: python main_pipeline.py
+
+  # Dịch vụ chạy Dashboard Streamlit
+  dashboard:
+    build: .
+    image: spark-4-pipeline:latest
+    ports:
+      - "8501:8501"
+    volumes:
+      - .:/app
+      - ./bigdata-mapping-b6ba7074c7d7.json:/app/bigdata-mapping-b6ba7074c7d7.json
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/bigdata-mapping-b6ba7074c7d7.json
+    command: streamlit run app.py

@@ -103,7 +103,6 @@ BEGIN
     category_prev                                                   AS Category,
     CAST(SUM(count_prev) AS BIGINT)                                 AS LuotTimKiem_ThangTruoc,
     CAST(SUM(count_curr) AS BIGINT)                                 AS LuotTimKiem_ThangNay,
-    CAST(SUM(count_curr) AS BIGINT) - CAST(SUM(count_prev) AS BIGINT) AS TangTruong,
     -- Tính Trung bình mỗi ngày của tháng này
     ROUND(SUM(count_curr) / NULLIF(max_day_of_month, 0), 2)         AS TB_MoiNgay_ThangNay,
     -- Tính Trung bình mỗi ngày của tháng trước
@@ -152,3 +151,4 @@ BEGIN
 END;
 
 CALL `cms_data_warehouse.sp_run_pipeline`();
+

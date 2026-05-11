@@ -27,8 +27,19 @@ import sys
 os.environ['PYSPARK_PYTHON'] = sys.executable
 os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_CREDENTIALS
-vertexai.init(project=VERTEX_PROJECT, location=VERTEX_LOCATION)
+# --- INITIALIZE SERVICES OPTIONALLY ---
+if os.path.exists(GOOGLE_CREDENTIALS):
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_CREDENTIALS
+    try:
+        vertexai.init(project=VERTEX_PROJECT, location=VERTEX_LOCATION)
+        HAS_AI = True
+        print("✅ Đã kết nối Vertex AI.")
+    except Exception as e:
+        print(f"⚠️ Không thể khởi tạo Vertex AI: {e}")
+        HAS_AI = False
+else:
+    print(f"ℹ️ Không tìm thấy file {GOOGLE_CREDENTIALS}. Chạy chế độ offline (chỉ dùng mapping.csv).")
+    HAS_AI = False
 
 # 1. Khởi tạo Spark Session
 spark = (
@@ -67,7 +78,8 @@ def classify_batch(movie_list):
     if not movie_list:
         return {}
 
-    model = GenerativeModel("gemini-2.5-flash")
+    if HAS_AI:
+        model = GenerativeModel("gemini-2.5-flash")
     results = {}
 
     for i in range(0, len(movie_list), CLASSIFICATION_BATCH_SIZE):
@@ -120,6 +132,12 @@ def classify_batch(movie_list):
 
     Danh sách:
     {json.dumps(batch, ensure_ascii=False)} """ 
+
+        if not HAS_AI:
+            print("  -> Bỏ qua gọi AI (Offline mode).")
+            for m in batch:
+                results[m] = "Other"
+            continue
 
         try:
             response = model.generate_content(prompt)

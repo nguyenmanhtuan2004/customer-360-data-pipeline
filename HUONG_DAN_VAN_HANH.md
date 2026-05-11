@@ -1,77 +1,53 @@
-# 🚀 Hướng dẫn Vận hành Pipeline Data Engineering (Class 7)
+# 📘 Hướng dẫn Vận hành Pipeline Data Customer 360 (Docker)
 
-Dự án này sử dụng PySpark để xử lý dữ liệu Log Search và Log Content, chuyển đổi sang mô hình Star Schema và đẩy lên BigQuery.
-
-## ⚠️ Lưu ý Quan trọng (Khắc phục lỗi Crash)
-**KHÔNG sử dụng Python 3.12** để chạy dự án này trên Windows. 
-Hiện tại có một lỗi hệ thống giữa PySpark và Python 3.12 trên Windows gây ra lỗi `EOFException` (Worker Crash). Dự án bắt buộc phải chạy trên môi trường **Python 3.11**.
+Tài liệu này hướng dẫn cách chạy toàn bộ hệ thống xử lý dữ liệu từ Log thô đến Star Schema và Dashboard, ngay cả khi bạn không cài đặt Spark/Java trên máy.
 
 ---
 
-## 1. Thiết lập Môi trường (Chỉ làm 1 lần)
+## 🛠 1. Chuẩn bị (Prerequisites)
+1.  **Docker & Docker Compose**: Đảm bảo máy đã cài Docker Desktop.
+2.  **Dữ liệu đầu vào**: Đặt các thư mục `log_search` và `log_content` vào cùng thư mục với dự án.
+3.  **Quyền truy cập (Tùy chọn)**:
+    *   Nếu muốn đẩy dữ liệu lên Cloud: Copy file `bigdata-mapping-b6ba7074c7d7.json` vào thư mục gốc.
+    *   Nếu không có file này: Pipeline sẽ tự động chạy ở chế độ **Offline** (chỉ lưu file Parquet tại máy local).
 
-Nếu bạn chưa có môi trường `spark_env`, hãy mở **Anaconda Prompt** và chạy các lệnh sau:
+---
 
+## 🚀 2. Các bước triển khai
+
+### Bước 1: Build hệ thống (Chỉ làm 1 lần đầu)
+Mở Terminal tại thư mục dự án và chạy:
 ```bash
-# Tạo môi trường Python 3.11
-conda create -n spark_env python=3.11 -y
-
-# Kích hoạt môi trường
-conda activate spark_env
-
-# Cài đặt các thư viện cần thiết
-pip install pyspark==4.1.1 findspark pandas pyarrow pandas-gbq google-auth
+docker compose build
 ```
+*Docker sẽ tự động tải Python 3.11, Spark 4.1.1 và Java 17 cho bạn.*
 
----
-
-## 2. Cách chạy Pipeline
-
-### Cách 1: Chạy tự động (Khuyến nghị)
-Double-click vào file: `run_pipeline.bat`
-* File này đã được cấu hình để tự động kích hoạt môi trường `spark_env` và chạy toàn bộ quy trình.
-
-### Cách 2: Chạy bằng tay (Manual)
-Mở Terminal/Anaconda Prompt tại thư mục dự án:
-```powershell
-conda activate spark_env
-python main_pipeline.py
-```
-
----
-
-## 3. Cấu trúc Pipeline
-1. **Step 1**: Thu thập và làm sạch log (`log_search`, `log_content`).
-2. **Step 2**: Gộp dữ liệu (OBT) và tạo mô hình Star Schema (Fact/Dim tables).
-3. **Step 3**: Tải dữ liệu lên Google BigQuery.
-
----
-
-## 4. Kiểm tra Lỗi (Troubleshooting)
-- **Lỗi `PYTHON_VERSION_MISMATCH`**: Đảm bảo bạn đã kích hoạt môi trường `spark_env`.
-- **Lỗi `EOFException`**: Kiểm tra xem có đang dùng Python 3.12 không (phải dùng 3.11).
-- **Lỗi Bộ nhớ (RAM)**: Nếu dữ liệu tăng lên quá lớn (trên 5-10 triệu dòng), hãy tăng thông số RAM trong file `etl_step2_obt_concat_model.py` tại hàm `get_spark_session`.
-
----
-
-## 5. Tự động hóa với Task Scheduler
-Để chạy Pipeline hàng ngày vào lúc 8:00 AM:
-1. Mở **Task Scheduler** trên Windows.
-2. Chọn **Create Basic Task**.
-3. Tại phần **Action**, chọn **Start a program**.
-4. Trỏ tới file `e:\DataEngineer\BigData\Class7\run_pipeline.bat`.
----
-
-## 6. Chạy với Docker (Môi trường Cô lập)
-
-Nếu bạn không muốn cài đặt Java/Spark trực tiếp trên máy, bạn có thể dùng Docker:
-
+### Bước 2: Chạy Pipeline xử lý dữ liệu (ETL)
+Lệnh này sẽ chạy các bước: Làm sạch dữ liệu -> Phân loại AI -> Tạo mô hình Star Schema.
 ```bash
-# 1. Xây dựng Image và chạy Container
-docker-compose up --build
-
-# 2. Vào bên trong Container để kiểm tra (nếu cần)
-docker exec -it spark_data_pipeline bash
+docker compose up pipeline
 ```
+*Sau khi chạy xong, kết quả sẽ được lưu vào các thư mục `.parquet` như `Fact_Customer_360.parquet`, `Dim_User.parquet`,...*
 
-Docker sẽ tự động thiết lập Python 3.11, Java 17 và PySpark bên trong môi trường Linux, giúp loại bỏ hoàn toàn các lỗi xung đột hệ điều hành Windows.
+### Bước 3: Xem Dashboard báo cáo
+Khởi động ứng dụng giao diện Streamlit:
+```bash
+docker compose up dashboard
+```
+*Sau đó, truy cập trình duyệt tại địa chỉ: **http://localhost:8501***
+
+---
+
+## 📂 3. Cấu trúc các thành phần chính
+*   `main_pipeline.py`: Bộ điều khiển trung tâm (Orchestrator).
+*   `etl_step1_...`: Tiền xử lý dữ liệu Search và Content.
+*   `etl_step2_...`: Xây dựng mô hình dữ liệu (Fact/Dim).
+*   `etl_step3_...`: Nạp dữ liệu lên BigQuery (Tự động bỏ qua nếu thiếu Key).
+*   `app.py`: Giao diện Dashboard hiển thị báo cáo.
+
+---
+
+## 💡 4. Mẹo nhỏ
+*   **Xóa Container sau khi chạy**: Thêm flag `--rm` để Docker tự dọn dẹp bộ nhớ:
+    `docker compose run --rm pipeline`
+*   **Cập nhật Code**: Nếu bạn sửa code Python, chỉ cần chạy lại `docker compose up`, Docker sẽ cập nhật thay đổi trong 1-2 giây nhờ cơ chế Cache.

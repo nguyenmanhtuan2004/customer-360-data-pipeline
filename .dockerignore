@@ -1,0 +1,20 @@
+# Loại bỏ các folder dữ liệu nặng
+**/*.parquet/
+**/*.parquet
+log_search/
+log_content/
+final_output_*/
+
+# Loại bỏ các file tạm và môi trường
+.git
+.vscode
+__pycache__
+**/*.zip
+**/*.log
+.gemini
+venv/
+.env
+*.bat
+
+# Loại bỏ các file cài đặt local
+E:/DataEngineer/BigData/Class7/Fact_Customer_360.parquet/
