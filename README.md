@@ -10,36 +10,55 @@ Dự án mô phỏng môi trường dữ liệu thực tế tại các công ty 
 
 ```mermaid
 flowchart LR
-    subgraph INPUT["📥 Raw Data"]
-        A["Log Search (TXT)"]
-        B["Log Content (JSON)"]
+    subgraph INPUT["📥 Đầu vào"]
+        A["final_output_logsearch.parquet"]
+        B["final_output_logcontent.parquet"]
     end
 
-    subgraph STEP1["⚙️ ETL (PySpark / Vertex AI)"]
-        C["Clean & Parse (Step 1)"]
-        D["Star Schema Modeling (Step 2)"]
+    subgraph STEP1["⚙️ Step 1: PySpark - Concat & Modeling"]
+        C["Concat - Full Outer Join"]
+        D["Fact_Customer_360"]
+        E["Dim_User"]
+        F["Dim_Service"]
+        F2["Dim_Cust"]
+        F3["Dim_Date"]
     end
 
-    subgraph STEP2["☁️ Load to BigQuery"]
-        E["Google BigQuery\ncms_data_warehouse"]
+    subgraph STEP2["☁️ Step 2: Load to BigQuery"]
+        G["BigQuery\ncms_data_warehouse"]
     end
 
-    subgraph STEP3["📊 ELT (Stored Procedures)"]
-        F["Data Marts (OLAP Tables)"]
+    subgraph STEP3["📊 Step 3: Stored Procedure"]
+        H["CALL Calculate_Marketing_Report()"]
+        I["Report Tables - Datamart"]
     end
 
-    subgraph STEP4["📈 Presentation"]
-        G["Power BI (Dashboard)"]
-        H["Streamlit (Web App)"]
+    subgraph STEP4["⏰ Step 4: Schedule Event"]
+        J["BigQuery Scheduled Query\nhoặc main_pipeline.py"]
+    end
+
+    subgraph STEP5["📈 Step 5: Dashboard"]
+        K["Power BI Desktop - .pbix"]
+        L["Streamlit Web App"]
     end
 
     A --> C
     B --> C
     C --> D
-    D --> E
-    E --> F
+    C --> E
+    C --> F
+    C --> F2
+    C --> F3
+    D --> G
+    E --> G
     F --> G
+    F2 --> G
+    F3 --> G
     G --> H
+    H --> I
+    J -.->|trigger| H
+    I --> K
+    I --> L
 ```
 
 ## 🛠️ Công nghệ sử dụng (Tech Stack)
