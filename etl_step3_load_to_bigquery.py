@@ -66,7 +66,7 @@ def main():
     
     print("====================================")
     
-    print("🎉 XONG BƯỚC 2! Toàn bộ Data Warehouse đã được cập nhật lên Google BigQuery.")
+    print("🎉 XONG BƯỚC 3! Toàn bộ Data Warehouse đã được cập nhật lên Google BigQuery.")
     print("👉 Hãy mở BigQuery Console để kiểm tra các bảng trong dataset 'cms_data_warehouse'.")
 
 if __name__ == "__main__":

@@ -63,7 +63,7 @@ flowchart LR
 
 ## 🛠️ Công nghệ sử dụng (Tech Stack)
 
-- **Ngôn ngữ:** Python 3.12, SQL
+- **Ngôn ngữ:** Python 3.11, SQL
 - **Phân tán & Xử lý Dữ liệu lớn (Big Data):** Apache Spark (PySpark), Pandas
 - **Kho dữ liệu (Data Warehouse):** Google BigQuery
 - **Trí tuệ nhân tạo (AI):** Google Vertex AI (Phân loại Log Search)

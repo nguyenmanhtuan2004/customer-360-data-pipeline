@@ -53,17 +53,50 @@ def create_obt(spark):
          .otherwise("unknown")
     ).drop("has_search", "has_content")
 
-    return df_obt, df_content
+    return df_obt, df_search, df_content
 
-def create_dim_user(spark, df_obt):
-    """Tạo bảng Dim_User trực tiếp từ dữ liệu đã xử lý."""
+def create_dim_user(spark, df_obt, df_search):
+    """Tạo Dim_User: Thuộc tính thiết bị/mạng từ log search."""
     print("Đang bóc tách Dim_User...")
-    return df_obt.select("Profile_ID").distinct()
+    
+    # Kiểm tra các cột có sẵn trong df_search
+    available_cols = df_search.columns
+    select_cols = ["Profile_ID"]
+    
+    # Bổ sung các cột thuộc tính nếu tồn tại
+    for col in ["proxy_isp", "platform", "networkType"]:
+        if col in available_cols:
+            select_cols.append(col)
+    
+    if len(select_cols) == 1:
+        # Fallback: Nếu không có cột nào, tạo cột phân loại từ data_source
+        return df_obt.select("Profile_ID") \
+            .distinct() \
+            .withColumn("user_segment", 
+                F.when(F.col("Profile_ID").startswith("TV"), "TV_User")
+                 .otherwise("Digital_User"))
+    
+    return df_search.select(*select_cols).dropDuplicates(["Profile_ID"])
 
 def create_dim_cust(spark, df_content):
-    """Tạo bảng Dim_Cust từ thông tin khách hàng trong content logs."""
+    """Tạo Dim_Cust: Thuộc tính TĨNH và Phân loại khách hàng (SCD Type 1)."""
     print("Đang bóc tách Dim_Cust...")
-    return df_content.select("Profile_ID", "Active", "Taste").distinct()
+    
+    # Giữ lại Profile_ID làm Primary Key cho Dim_Cust
+    select_cols = ["Profile_ID"]
+    available = df_content.columns
+    
+    # Mac_Address là thuộc tính tĩnh của thiết bị
+    if "Mac_Address" in available:
+        select_cols.append("Mac_Address")
+    
+    # Thêm Active làm thuộc tính phân loại trạng thái hoạt động hiện tại (SCD Type 1)
+    if "Active" in available:
+        select_cols.append("Active")
+    
+    dim = df_content.select(*select_cols).dropDuplicates(["Profile_ID"])
+    
+    return dim
 
 def create_dim_service(spark):
     """Tạo bảng Dim_Service từ mapping cố định."""
@@ -107,21 +140,46 @@ def create_dim_date(spark, start="2022-06-01", end="2022-07-31"):
     ])
 
 def create_fact_customer_360(df_obt, dim_service, snapshot_date_key=20220731):
-    """Tạo Fact_Customer_360 từ OBT và mapping service."""
+    """Tạo Fact với metric rõ ràng và xử lý NULL từ outer join."""
     print(f"Đang tạo Fact_Customer_360 với date_key={snapshot_date_key}...")
-    # Chuẩn hóa tên cột nếu có typo từ Step 1
+    
+    # Chuẩn hóa tên cột
     if "MostWacth" in df_obt.columns:
         df_obt = df_obt.withColumnRenamed("MostWacth", "MostWatch")
     
-    if "MostWatch" not in df_obt.columns:
-        print("⚠️ Cảnh báo: Không tìm thấy cột thông tin xem phim. Tạo cột trống.")
-        df_obt = df_obt.withColumn("MostWatch", F.lit(None))
-
-    service_lookup = dim_service.groupBy("Type").agg(F.first("service_key").alias("service_key"))
+    # --- XỬ LÝ NULL: Fill 0 cho các cột numeric ---
+    duration_cols = ["Total_Giai_Tri", "Total_Phim_Truyen", 
+                     "Total_The_Thao", "Total_Thieu_Nhi", "Total_Truyen_Hinh"]
+    for col_name in duration_cols:
+        if col_name in df_obt.columns:
+            df_obt = df_obt.withColumn(col_name, F.coalesce(F.col(col_name), F.lit(0)))
     
-    return df_obt.join(F.broadcast(service_lookup), df_obt["MostWatch"] == service_lookup["Type"], "left") \
-                 .drop("Type") \
-                 .withColumn("date_key", F.lit(snapshot_date_key))
+    count_cols = ["count_prev", "count_curr"]
+    for col_name in count_cols:
+        if col_name in df_obt.columns:
+            df_obt = df_obt.withColumn(col_name, F.coalesce(F.col(col_name), F.lit(0)))
+    
+    # --- TÍNH THÊM METRIC tổng hợp ---
+    if all(c in df_obt.columns for c in duration_cols):
+        df_obt = df_obt.withColumn(
+            "total_watch_duration",
+            sum([F.col(c) for c in duration_cols])
+        )
+    
+    # Join service key
+    if "MostWatch" not in df_obt.columns:
+        df_obt = df_obt.withColumn("MostWatch", F.lit(None))
+    
+    service_lookup = dim_service.groupBy("Type") \
+        .agg(F.first("service_key").alias("service_key"))
+    
+    fact = df_obt.join(
+        F.broadcast(service_lookup),
+        df_obt["MostWatch"] == service_lookup["Type"], "left"
+    ).drop("Type") \
+     .withColumn("date_key", F.lit(snapshot_date_key))
+    
+    return fact
 
 def save_star_schema(fact, d_user, d_cust, d_service, d_date):
     """Lưu tất cả các bảng ra định dạng Parquet (Parallel Write)."""
@@ -142,10 +200,10 @@ def main():
     spark = get_spark_session()
 
     # ETL Pipeline
-    df_obt, df_content = create_obt(spark)
+    df_obt, df_search, df_content = create_obt(spark)
     df_obt.cache()
     
-    dim_user = create_dim_user(spark, df_obt)
+    dim_user = create_dim_user(spark, df_obt, df_search)
     dim_cust = create_dim_cust(spark, df_content)
     dim_service = create_dim_service(spark)
     dim_date = create_dim_date(spark)

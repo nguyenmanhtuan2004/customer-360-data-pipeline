@@ -43,3 +43,10 @@ test.ipynb
 
 # --- AGENT / TEMP ---
 .agent/
+
+# --- DOCUMENTATION ---
+# Ignore all markdown files
+*.md
+**/*.md
+# Except README.md
+![Rr][Ee][Aa][Dd][Mm][Ee].md
