@@ -10,17 +10,17 @@
         rel="stylesheet">
     <style>
         :root {
-            --navy: #0F1E3C;
+            --navy: #F8FAFC;
             --blue: #1A56DB;
             --cyan: #0EA5E9;
             --teal: #0D9488;
             --amber: #F59E0B;
             --rose: #F43F5E;
             --green: #10B981;
-            --white: #F8FAFC;
-            --gray: #94A3B8;
-            --glass: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --white: #0F1E3C;
+            --gray: #475569;
+            --glass: rgba(15, 30, 60, 0.04);
+            --glass-border: rgba(15, 30, 60, 0.06);
         }
 
         *,
@@ -38,7 +38,6 @@
             overflow: hidden;
             width: 100vw;
             height: 100vh;
-            cursor: none;
         }
 
         /* Custom cursor */
@@ -116,7 +115,7 @@
             width: 6px;
             height: 6px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(15, 30, 60, 0.2);
             transition: all 0.3s;
             cursor: pointer;
         }
@@ -124,6 +123,62 @@
         .dot.active {
             background: var(--cyan);
             transform: scale(1.5);
+        }
+
+        /* Carousel Table Dot styling */
+        .table-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(15, 30, 60, 0.2);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+            border: none;
+            padding: 0;
+            outline: none;
+        }
+
+        .table-dot:hover {
+            background: rgba(14, 165, 233, 0.5);
+            transform: scale(1.1);
+        }
+
+        .table-dot.active {
+            background: var(--cyan);
+            transform: scale(1.3);
+            box-shadow: 0 0 8px rgba(14, 165, 233, 0.6);
+        }
+
+        /* Carousel Table Navigation Arrow Buttons */
+        .table-arrow-btn {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            color: #d97706;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            outline: none;
+            user-select: none;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .table-arrow-btn:hover {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: var(--amber);
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
+        }
+
+        .table-arrow-btn:active {
+            transform: scale(0.95);
         }
 
         /* NAV BUTTONS */
@@ -174,18 +229,42 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 60px 80px 60px;
+            padding: 100px 80px;
             opacity: 0;
             transform: translateX(60px);
             transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
             pointer-events: none;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--cyan) transparent;
+        }
+
+        .slide::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .slide::-webkit-scrollbar-thumb {
+            background: var(--cyan);
+            border-radius: 10px;
         }
 
         .slide.active {
             opacity: 1;
             transform: translateX(0);
             pointer-events: all;
+        }
+
+        /* Thêm container đệm để nội dung ngắn vẫn có thể căn giữa nếu muốn, 
+           nhưng ở đây ta sẽ dùng margin-top: auto; margin-bottom: auto; cho nội dung 
+           nếu muốn căn giữa linh hoạt. Tuy nhiên để đơn giản và tránh lỗi scroll, 
+           ta sẽ để nó flow tự nhiên từ trên xuống. */
+
+        .slide>*:first-child {
+            margin-top: auto;
+        }
+
+        .slide>*:last-child {
+            margin-bottom: auto;
         }
 
         .slide.exit {
@@ -603,12 +682,14 @@
         }
 
         .insight-box strong {
-            color: var(--amber);
+            color: #d97706;
+            /* Darker amber for better contrast */
         }
 
         .insight-box p {
             font-size: 13px;
-            color: #e2c97e;
+            color: #334155;
+            /* Slate 700 for high readability in light mode */
             line-height: 1.6;
         }
 
@@ -658,24 +739,104 @@
         .cover-flow {
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 13px;
+            gap: 12px;
+            font-size: 15px;
             color: var(--gray);
-            margin-top: 24px;
+            margin-top: 40px;
             font-family: 'JetBrains Mono', monospace;
+            flex-wrap: nowrap;
+            justify-content: center;
+            max-width: 900px;
+            width: 100%;
         }
 
         .cover-flow .step {
-            background: rgba(14, 165, 233, 0.1);
-            border: 1px solid rgba(14, 165, 233, 0.2);
-            border-radius: 6px;
-            padding: 6px 12px;
+            background: rgba(14, 165, 233, 0.08);
+            border: 1.5px solid rgba(14, 165, 233, 0.18);
+            border-radius: 8px;
+            padding: 10px 18px;
             color: var(--cyan);
-            font-size: 12px;
+            font-size: 13.5px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.03);
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            /* spring-like curves */
+            cursor: default;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .cover-flow .step:hover {
+            transform: translateY(-4px) scale(1.04);
+            background: rgba(14, 165, 233, 0.15);
+            border-color: var(--cyan);
+            color: var(--blue);
+            box-shadow: 0 8px 24px rgba(14, 165, 233, 0.15), 0 0 10px rgba(14, 165, 233, 0.1);
         }
 
         .cover-flow .arrow {
-            color: rgba(255, 255, 255, 0.2);
+            color: var(--cyan);
+            opacity: 0.5;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .cover-flow:hover .arrow {
+            opacity: 0.8;
+            transform: scale(1.1);
+        }
+
+        /* Responsive Flow for Step-by-Step Flowchart */
+        @media (max-width: 1200px) {
+            .cover-flow {
+                gap: 8px;
+                max-width: 95%;
+            }
+            .cover-flow .step {
+                font-size: 11.5px;
+                padding: 8px 12px;
+            }
+            .cover-flow .arrow {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .cover-flow {
+                gap: 6px;
+            }
+            .cover-flow .step {
+                font-size: 10px;
+                padding: 6px 10px;
+                border-radius: 6px;
+            }
+            .cover-flow .arrow {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .cover-flow {
+                gap: 4px;
+                overflow-x: auto;
+                justify-content: flex-start;
+                padding: 10px 20px;
+                scrollbar-width: none; /* Hide scrollbar on Firefox */
+            }
+            .cover-flow::-webkit-scrollbar {
+                display: none; /* Hide scrollbar on Chrome, Safari, Opera */
+            }
+            .cover-flow .step {
+                font-size: 9.5px;
+                padding: 6px 8px;
+                flex-shrink: 0;
+            }
+            .cover-flow .arrow {
+                font-size: 10px;
+                flex-shrink: 0;
+            }
         }
 
         /* Stagger animation for child elements */
@@ -787,7 +948,8 @@
         .pbi-tab {
             background: transparent;
             border: none;
-            color: var(--gray);
+            color: #1a2a47;
+            /* Đậm hơn var(--gray) để dễ nhìn trên nền sáng */
             padding: 8px 20px;
             font-size: 13px;
             font-weight: 600;
@@ -822,16 +984,16 @@
 
         .pbi-container {
             position: relative;
-            width: 90vw;
-            max-width: 960px;
-            height: 480px;
-            background: rgba(15, 30, 60, 0.6);
+            width: 95vw;
+            max-width: 1040px;
+            height: 540px;
+            background: #1e293b;
             border: 1.5px solid var(--glass-border);
             border-radius: 16px;
             padding: 8px;
             backdrop-filter: blur(20px);
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4),
-                        0 0 30px rgba(14, 165, 233, 0.15);
+                0 0 30px rgba(14, 165, 233, 0.15);
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             overflow: hidden;
             display: flex;
@@ -841,7 +1003,7 @@
         .pbi-container:hover {
             border-color: rgba(14, 165, 233, 0.4);
             box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5),
-                        0 0 45px rgba(14, 165, 233, 0.35);
+                0 0 45px rgba(14, 165, 233, 0.35);
             transform: translateY(-2px);
         }
 
@@ -861,14 +1023,23 @@
             display: inline-block;
         }
 
-        .pbi-dot.red { background: #ff5f56; }
-        .pbi-dot.yellow { background: #ffbd2e; }
-        .pbi-dot.green { background: #27c93f; }
+        .pbi-dot.red {
+            background: #ff5f56;
+        }
+
+        .pbi-dot.yellow {
+            background: #ffbd2e;
+        }
+
+        .pbi-dot.green {
+            background: #27c93f;
+        }
 
         .pbi-title {
-            font-size: 11px;
+            font-size: 13px;
+            font-weight: 600;
             font-family: 'JetBrains Mono', monospace;
-            color: var(--gray);
+            color: #f8fafc;
             margin-left: 8px;
             flex-grow: 1;
             letter-spacing: 0.5px;
@@ -876,11 +1047,11 @@
         }
 
         .pbi-external-btn {
-            font-size: 11px;
-            color: var(--cyan);
+            font-size: 12px;
+            color: #38bdf8;
             text-decoration: none;
-            background: rgba(14, 165, 233, 0.1);
-            border: 1px solid rgba(14, 165, 233, 0.2);
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.3);
             padding: 3px 10px;
             border-radius: 12px;
             transition: all 0.2s;
@@ -909,9 +1080,11 @@
             .pbi-container {
                 height: 380px;
             }
+
             .slide {
                 padding: 40px 60px 40px;
             }
+
             .slide-sub {
                 margin-bottom: 20px;
             }
@@ -926,7 +1099,7 @@
     <div class="bg-glow"></div>
 
     <div class="progress-bar" id="progressBar"></div>
-    <div class="timer">Slide <span id="slideNum">1</span>/8</div>
+    <div class="timer">Slide <span id="slideNum">1</span>/7</div>
 
     <!-- Slide dots -->
     <div class="slide-counter" id="dots"></div>
@@ -944,19 +1117,21 @@
                 Customer 360 &<br><span class="highlight">Marketing Analytics</span>
             </div>
             <div class="slide-sub float-up delay-2">
-                Luồng dữ liệu End-to-End: Raw Log → ETL → Data Warehouse → Dashboard<br>
+                Luồng dữ liệu End-to-End: Raw Log → ETL → Data Modeling → Data Warehouse → Dashboard<br>
                 <span style="color:var(--amber); font-size:13px;">Ngành OTT / Truyền hình trực tuyến</span>
             </div>
             <div class="cover-flow float-up delay-3">
-                <span class="step">📥 Log Thô</span>
+                <span class="step">📥 Extract Raw Log</span>
                 <span class="arrow">→</span>
-                <span class="step">⚙️ PySpark ETL</span>
+                <span class="step">⚙️ Transform (PySpark)</span>
                 <span class="arrow">→</span>
-                <span class="step">☁️ BigQuery</span>
+                <span class="step">⭐ Data Modeling</span>
                 <span class="arrow">→</span>
-                <span class="step">📊 OLAP</span>
+                <span class="step">☁️ Load to BigQuery</span>
                 <span class="arrow">→</span>
-                <span class="step">📈 Dashboard</span>
+                <span class="step">📊 Calculate OLAP</span>
+                <span class="arrow">→</span>
+                <span class="step">📈 Visualize Dashboard</span>
             </div>
         </div>
 
@@ -991,19 +1166,20 @@
                 <div style="text-align:center;">
                     <div style="font-size:28px;font-weight:900;color:var(--cyan);font-family:'JetBrains Mono'">79,732
                     </div>
-                    <div style="font-size:11px;color:var(--gray)">Users (Log Search)</div>
+                    <div style="font-size:11px;color:var(--gray)">Users (Log Search · Tháng 6, 7)</div>
                 </div>
                 <div style="width:1px;background:var(--glass-border)"></div>
                 <div style="text-align:center;">
                     <div style="font-size:28px;font-weight:900;color:var(--green);font-family:'JetBrains Mono'">1.92M
                     </div>
-                    <div style="font-size:11px;color:var(--gray)">Bản ghi (Log Content)</div>
+                    <div style="font-size:11px;color:var(--gray)">Bản ghi (Log Content · Tháng 4)</div>
                 </div>
                 <div style="width:1px;background:var(--glass-border)"></div>
                 <div style="text-align:center;">
-                    <div style="font-size:28px;font-weight:900;color:var(--amber);font-family:'JetBrains Mono'">T6–T7
+                    <div style="font-size:28px;font-weight:900;color:var(--amber);font-family:'JetBrains Mono'">T4,
+                        T6-T7
                     </div>
-                    <div style="font-size:11px;color:var(--gray)">2022 · So sánh MoM</div>
+                    <div style="font-size:11px;color:var(--gray)">2022 · Phạm vi dữ liệu</div>
                 </div>
             </div>
         </div>
@@ -1011,47 +1187,8 @@
         <!-- SLIDE 2: PIPELINE ARCHITECTURE -->
         <div class="slide" id="slide-2">
             <div class="slide-label">Chapter II · Kiến trúc</div>
-            <div class="slide-title">Pipeline <span class="highlight">5 Bước</span></div>
-            <div class="pipeline stagger" style="margin-bottom:20px;">
-                <div class="pipe-step">
-                    <div class="pipe-box" style="border-color:rgba(14,165,233,0.3);">
-                        <div class="pipe-icon">📥</div>
-                        <div class="pipe-name">Extract</div>
-                        <div class="pipe-tech">PySpark + Vertex AI</div>
-                    </div>
-                </div>
-                <div class="pipe-arrow">→</div>
-                <div class="pipe-step">
-                    <div class="pipe-box">
-                        <div class="pipe-icon">🔧</div>
-                        <div class="pipe-name">Transform</div>
-                        <div class="pipe-tech">PySpark ETL</div>
-                    </div>
-                </div>
-                <div class="pipe-arrow">→</div>
-                <div class="pipe-step">
-                    <div class="pipe-box">
-                        <div class="pipe-icon">☁️</div>
-                        <div class="pipe-name">Load</div>
-                        <div class="pipe-tech">pandas-gbq</div>
-                    </div>
-                </div>
-                <div class="pipe-arrow">→</div>
-                <div class="pipe-step">
-                    <div class="pipe-box">
-                        <div class="pipe-icon">🗄️</div>
-                        <div class="pipe-name">Stored Proc</div>
-                        <div class="pipe-tech">BigQuery SQL</div>
-                    </div>
-                </div>
-                <div class="pipe-arrow">→</div>
-                <div class="pipe-step">
-                    <div class="pipe-box" style="border-color:rgba(16,185,129,0.3);">
-                        <div class="pipe-icon">📊</div>
-                        <div class="pipe-name">Visualize</div>
-                        <div class="pipe-tech">Power BI + Streamlit</div>
-                    </div>
-                </div>
+            <div class="slide-title">Kiến Trúc <span class="highlight">Công Nghệ</span></div>
+            <div class="slide-sub">Hệ thống xử lý dữ liệu End-to-End được phân tách thành 4 lớp công nghệ chuyên biệt
             </div>
             <table class="mini-table stagger">
                 <tr>
@@ -1224,13 +1361,262 @@
                         <div style="font-size:13px;font-weight:700;">Load + Stored Procedure</div>
                     </div>
                     <div style="font-size:11px;color:var(--gray);line-height:1.6;">
-                        ☁️ Nạp 5 bảng Parquet → BigQuery<br>
-                        ⚡ Stored Procedure tính 6 bảng OLAP<br>
-                        🐳 Docker Compose 1 lệnh deploy<br>
-                        ✅ <strong style="color:var(--white)">6 OLAP tables sẵn sàng phân tích</strong>
+                        ☁️ Load dữ liệu lên BigQuery Warehouse<br>
+                        ⚙️ SQL Stored Procedure tối ưu hóa<br>
+                        📊 Phân chia phân vùng, cụm dữ liệu<br>
+                        ✅ <strong style="color:var(--white)">DWH sẵn sàng cho phân tích OLAP</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Tabs Navigation -->
+            <div class="pbi-tabs stagger" style="margin-top: 24px; margin-bottom: 20px;">
+                <button class="pbi-tab active" onclick="switchTableTab(this, 'logsearch')">🔍 Log Search Output (Step
+                    1A)</button>
+                <button class="pbi-tab" onclick="switchTableTab(this, 'logcontent')">📝 Log Content Output (Step
+                    1B)</button>
+                <button class="pbi-tab" onclick="switchTableTab(this, 'fact360')">🎯 Fact Customer 360 (Step 2)</button>
+            </div>
+
+            <!-- Tab 1: Log Search ETL Table -->
+            <div id="table-panel-logsearch" class="pbi-panel active" style="width:100%; max-width:860px;">
+                <div
+                    style="font-size:11px; font-weight:700; color:var(--cyan); margin-bottom:8px; text-transform:uppercase; letter-spacing:1px; text-align:left; width:100%;">
+                    📝 Sample Output: Log Search ETL
+                </div>
+                <table
+                    style="width:100%; border-collapse:collapse; font-size:11px; background:var(--glass); border:1px solid var(--glass-border); border-radius:12px; overflow:hidden; box-shadow: 0 4px 20px rgba(15, 30, 60, 0.03);">
+                    <thead>
+                        <tr style="background:rgba(14,165,233,0.12); color:#0369a1; text-align:left;">
+                            <th
+                                style="padding:10px 12px; border-bottom:1px solid rgba(14,165,233,0.2); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">
+                                user_id</th>
+                            <th
+                                style="padding:10px 12px; border-bottom:1px solid rgba(14,165,233,0.2); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">
+                                most_searched_prev</th>
+                            <th
+                                style="padding:10px 12px; border-bottom:1px solid rgba(14,165,233,0.2); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">
+                                count_prev</th>
+                            <th
+                                style="padding:10px 12px; border-bottom:1px solid rgba(14,165,233,0.2); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">
+                                most_searched_curr</th>
+                            <th
+                                style="padding:10px 12px; border-bottom:1px solid rgba(14,165,233,0.2); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">
+                                count_curr</th>
+                            <th
+                                style="padding:10px 12px; border-bottom:1px solid rgba(14,165,233,0.2); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">
+                                category_prev</th>
+                            <th
+                                style="padding:10px 12px; border-bottom:1px solid rgba(14,165,233,0.2); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">
+                                category_curr</th>
+                            <th
+                                style="padding:10px 12px; border-bottom:1px solid rgba(14,165,233,0.2); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">
+                                Trending_Type</th>
+                            <th
+                                style="padding:10px 12px; border-bottom:1px solid rgba(14,165,233,0.2); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">
+                                Previous</th>
+                        </tr>
+                    </thead>
+                    <tbody style="color:var(--gray);">
+                        <tr style="border-bottom:1px solid rgba(15,30,60,0.04);">
+                            <td style="padding:10px 12px; color:var(--white); font-weight:600;">40997329</td>
+                            <td style="padding:10px 12px;">xmeye</td>
+                            <td style="padding:10px 12px;">100</td>
+                            <td style="padding:10px 12px;">tôi thấy hoa vàng...</td>
+                            <td style="padding:10px 12px;">1</td>
+                            <td style="padding:10px 12px;">—</td>
+                            <td style="padding:10px 12px;">Drama</td>
+                            <td style="padding:10px 12px;"><span class="badge rose">Changed</span></td>
+                            <td style="padding:10px 12px;">Drama</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(15,30,60,0.04);">
+                            <td style="padding:10px 12px; color:var(--white); font-weight:600;">49904609</td>
+                            <td style="padding:10px 12px;">siêu nhân</td>
+                            <td style="padding:10px 12px;">87</td>
+                            <td style="padding:10px 12px;">siêu nhân</td>
+                            <td style="padding:10px 12px;">8</td>
+                            <td style="padding:10px 12px;">Action</td>
+                            <td style="padding:10px 12px;">Action</td>
+                            <td style="padding:10px 12px;"><span class="badge">Unchanged</span></td>
+                            <td style="padding:10px 12px;">Unchanged</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(15,30,60,0.04);">
+                            <td style="padding:10px 12px; color:var(--white); font-weight:600;">06439787</td>
+                            <td style="padding:10px 12px;">pent</td>
+                            <td style="padding:10px 12px;">76</td>
+                            <td style="padding:10px 12px;">boys over flowers</td>
+                            <td style="padding:10px 12px;">2</td>
+                            <td style="padding:10px 12px;">K Drama</td>
+                            <td style="padding:10px 12px;">K Drama</td>
+                            <td style="padding:10px 12px;"><span class="badge">Unchanged</span></td>
+                            <td style="padding:10px 12px;">Unchanged</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:10px 12px; color:var(--white); font-weight:600;">44351349</td>
+                            <td style="padding:10px 12px;">fairy tail</td>
+                            <td style="padding:10px 12px;">73</td>
+                            <td style="padding:10px 12px;">fairy tail</td>
+                            <td style="padding:10px 12px;">7</td>
+                            <td style="padding:10px 12px;">Animation</td>
+                            <td style="padding:10px 12px;">Animation</td>
+                            <td style="padding:10px 12px;"><span class="badge">Unchanged</span></td>
+                            <td style="padding:10px 12px;">Unchanged</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Tab 2: Log Content ETL Table -->
+            <div id="table-panel-logcontent" class="pbi-panel" style="width:100%; max-width:860px;">
+                <div
+                    style="font-size:11px; font-weight:700; color:var(--teal); margin-bottom:8px; text-transform:uppercase; letter-spacing:1px; text-align:left; width:100%;">
+                    📝 Sample Output: Log Content ETL
+                </div>
+                <table
+                    style="width:100%; border-collapse:collapse; font-size:11px; background:var(--glass); border:1px solid var(--glass-border); border-radius:12px; overflow:hidden; box-shadow: 0 4px 20px rgba(15, 30, 60, 0.03);">
+                    <thead>
+                        <tr style="background:rgba(13,148,136,0.12); color:#0f766e; text-align:left;">
+                            <th
+                                style="padding:10px 12px; border-bottom:1px solid rgba(13,148,136,0.2); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">
+                                Contract</th>
+                            <th
+                                style="padding:10px 12px; border-bottom:1px solid rgba(13,148,136,0.2); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">
+                                Giai_Tri</th>
+                            <th
+                                style="padding:10px 12px; border-bottom:1px solid rgba(13,148,136,0.2); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">
+                                Phim_Truyen</th>
+                            <th
+                                style="padding:10px 12px; border-bottom:1px solid rgba(13,148,136,0.2); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">
+                                The_Thao</th>
+                            <th
+                                style="padding:10px 12px; border-bottom:1px solid rgba(13,148,136,0.2); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">
+                                Thieu_Nhi</th>
+                            <th
+                                style="padding:10px 12px; border-bottom:1px solid rgba(13,148,136,0.2); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">
+                                Truyen_Hinh</th>
+                            <th
+                                style="padding:10px 12px; border-bottom:1px solid rgba(13,148,136,0.2); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">
+                                MostWatch</th>
+                            <th
+                                style="padding:10px 12px; border-bottom:1px solid rgba(13,148,136,0.2); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">
+                                Taste</th>
+                            <th
+                                style="padding:10px 12px; border-bottom:1px solid rgba(13,148,136,0.2); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">
+                                Active</th>
+                        </tr>
+                    </thead>
+                    <tbody style="color:var(--gray);">
+                        <tr style="border-bottom:1px solid rgba(15,30,60,0.04);">
+                            <td
+                                style="padding:10px 12px; color:var(--white); font-family:'JetBrains Mono'; font-weight:600;">
+                                113.182.209.48</td>
+                            <td style="padding:10px 12px;">89</td>
+                            <td style="padding:10px 12px;">nan</td>
+                            <td style="padding:10px 12px;">nan</td>
+                            <td style="padding:10px 12px;">nan</td>
+                            <td style="padding:10px 12px;">63</td>
+                            <td style="padding:10px 12px;">Giai Tri</td>
+                            <td style="padding:10px 12px;">Giai Tri-Truyen Hinh</td>
+                            <td style="padding:10px 12px;"><span class="badge">Low</span></td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(15,30,60,0.04);">
+                            <td
+                                style="padding:10px 12px; color:var(--white); font-family:'JetBrains Mono'; font-weight:600;">
+                                113.183.15.246</td>
+                            <td style="padding:10px 12px;">nan</td>
+                            <td style="padding:10px 12px;">nan</td>
+                            <td style="padding:10px 12px;">nan</td>
+                            <td style="padding:10px 12px;">nan</td>
+                            <td style="padding:10px 12px;">8203</td>
+                            <td style="padding:10px 12px;">Truyen Hinh</td>
+                            <td style="padding:10px 12px;">Truyen Hinh</td>
+                            <td style="padding:10px 12px;"><span class="badge">Low</span></td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(15,30,60,0.04);">
+                            <td
+                                style="padding:10px 12px; color:var(--white); font-family:'JetBrains Mono'; font-weight:600;">
+                                113.183.60.85</td>
+                            <td style="padding:10px 12px;">nan</td>
+                            <td style="padding:10px 12px;">nan</td>
+                            <td style="padding:10px 12px;">nan</td>
+                            <td style="padding:10px 12px;">nan</td>
+                            <td style="padding:10px 12px;">1191</td>
+                            <td style="padding:10px 12px;">Truyen Hinh</td>
+                            <td style="padding:10px 12px;">Truyen Hinh</td>
+                            <td style="padding:10px 12px;"><span class="badge">Low</span></td>
+                        </tr>
+                        <tr>
+                            <td
+                                style="padding:10px 12px; color:var(--white); font-family:'JetBrains Mono'; font-weight:600;">
+                                113.191.153.52</td>
+                            <td style="padding:10px 12px;">nan</td>
+                            <td style="padding:10px 12px;">nan</td>
+                            <td style="padding:10px 12px;">nan</td>
+                            <td style="padding:10px 12px;">nan</td>
+                            <td style="padding:10px 12px;">9497</td>
+                            <td style="padding:10px 12px;">Truyen Hinh</td>
+                            <td style="padding:10px 12px;">Truyen Hinh</td>
+                            <td style="padding:10px 12px;"><span class="badge">Low</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Tab 3: Fact Customer 360 Table -->
+            <div id="table-panel-fact360" class="pbi-panel" style="width:100%; max-width:860px;">
+                <div
+                    style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; width:100%;">
+                    <div
+                        style="font-size:11px; font-weight:700; color:var(--amber); text-transform:uppercase; letter-spacing:1px; text-align:left;">
+                        🎯 Bảng Sự Kiện: Fact Customer 360
+                    </div>
+                    <div id="fact-table-title"
+                        style="font-size:10px; font-weight:600; color:var(--gray); letter-spacing:0.5px;">
+                        5. Metadata & Trạng Thái Hoạt Động (Mockup View)
                     </div>
                 </div>
 
+                <div
+                    style="width:100%; overflow-x:auto; border-radius:12px; border:1px solid var(--glass-border); background:var(--glass); box-shadow: 0 4px 20px rgba(15, 30, 60, 0.03);">
+                    <table id="fact-pbi-table"
+                        style="width:100%; border-collapse:collapse; font-size:11px; table-layout:auto;">
+                        <thead>
+                            <tr id="fact-table-header"
+                                style="background:rgba(245,158,11,0.15); color:#b45309; text-align:left; transition: all 0.3s ease;">
+                                <!-- Rendered Dynamically -->
+                            </tr>
+                        </thead>
+                        <tbody id="fact-table-body" style="color:var(--gray); transition: all 0.3s ease;">
+                            <!-- Rendered Dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Carousel Dot Page Indicators with Nav Arrows -->
+                <div
+                    style="display:flex; justify-content:center; align-items:center; gap:16px; margin-top:14px; width:100%;">
+                    <button class="table-arrow-btn" onclick="prevFactTablePage()" title="Cột trước" aria-label="Trang trước">‹</button>
+                    
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <button class="table-dot" onclick="switchFactTablePage(0)"
+                            title="1. Hồ Sơ Người Dùng & Nhật Ký Tìm Kiếm Kỳ Trước" aria-label="Trang 1"></button>
+                        <button class="table-dot" onclick="switchFactTablePage(1)"
+                            title="2. Nhật Ký Tìm Kiếm Kỳ Hiện Tại & Mạng Kết Nối" aria-label="Trang 2"></button>
+                        <button class="table-dot" onclick="switchFactTablePage(2)"
+                            title="3. Phân Tích Xu Hướng (Trending Analysis)" aria-label="Trang 3"></button>
+                        <button class="table-dot" onclick="switchFactTablePage(3)"
+                            title="4. Thời Lượng Xem Theo Thể Loại — Giải Trí, Phim, Thể Thao"
+                            aria-label="Trang 4"></button>
+                        <button class="table-dot active" onclick="switchFactTablePage(4)"
+                            title="5. Metadata & Trạng thái Hoạt Động (Mockup View)" aria-label="Trang 5"></button>
+                        <button class="table-dot" onclick="switchFactTablePage(5)"
+                            title="6. Thời Lượng Xem Theo Thể Loại — Thiếu Nhi, Truyền Hình" aria-label="Trang 6"></button>
+                        <button class="table-dot" onclick="switchFactTablePage(6)"
+                            title="7. Thông Tin Hạ Tầng Mạng & Khóa Ngoại" aria-label="Trang 7"></button>
+                    </div>
+
+                    <button class="table-arrow-btn" onclick="nextFactTablePage()" title="Cột sau" aria-label="Trang sau">›</button>
+                </div>
             </div>
         </div>
 
@@ -1245,7 +1631,7 @@
                     <div class="olap-tag" style="color:var(--cyan)">🏆 Loyalty</div>
                     <div class="olap-name">Category Loyalty</div>
                     <div class="olap-q">Danh mục nào giữ chân khách hàng tốt nhất?</div>
-                    <div class="olap-insight" style="background:rgba(14,165,233,0.08);color:#7dd3fc;">
+                    <div class="olap-insight" style="background:rgba(14,165,233,0.08);color:var(--cyan);">
                         Thiếu Nhi & Thể Thao = "ngách vàng" tỷ lệ trung thành cao
                     </div>
                 </div>
@@ -1255,7 +1641,7 @@
                     <div class="olap-tag" style="color:var(--green)">💎 VIP vs Casual</div>
                     <div class="olap-name">Power vs Casual</div>
                     <div class="olap-q">VIP & Casual có sở thích xem khác nhau không?</div>
-                    <div class="olap-insight" style="background:rgba(16,185,129,0.08);color:#6ee7b7;">
+                    <div class="olap-insight" style="background:rgba(16,185,129,0.08);color:var(--green);">
                         Phim Truyện = "chất kích hoạt" biến Casual → VIP
                     </div>
                 </div>
@@ -1265,7 +1651,7 @@
                     <div class="olap-tag" style="color:var(--amber)">🎯 Diversity</div>
                     <div class="olap-name">Taste Diversity</div>
                     <div class="olap-q">VIP có xem đa dạng thể loại hơn không?</div>
-                    <div class="olap-insight" style="background:rgba(245,158,11,0.08);color:#fde68a;">
+                    <div class="olap-insight" style="background:rgba(245,158,11,0.08);color:var(--amber);">
                         Xem đa dạng → gắn kết lâu dài hơn. Cần Recommendation Engine
                     </div>
                 </div>
@@ -1275,7 +1661,7 @@
                     <div class="olap-tag" style="color:var(--rose)">📈 Growth</div>
                     <div class="olap-name">Search Growth</div>
                     <div class="olap-q">Thể loại nào đang "nóng" và "nguội"?</div>
-                    <div class="olap-insight" style="background:rgba(244,63,94,0.08);color:#fca5a5;">
+                    <div class="olap-insight" style="background:rgba(244,63,94,0.08);color:var(--rose);">
                         Horror +1000% · K Drama bùng nổ. Comedy bão hòa
                     </div>
                 </div>
@@ -1285,7 +1671,7 @@
                     <div class="olap-tag" style="color:#a855f7">🔀 Migration</div>
                     <div class="olap-name">Interest Migration</div>
                     <div class="olap-q">Khách hàng rời bỏ thể loại nào → sang thể loại nào?</div>
-                    <div class="olap-insight" style="background:rgba(168,85,247,0.08);color:#d8b4fe;">
+                    <div class="olap-insight" style="background:rgba(168,85,247,0.08);color:#a855f7;">
                         K Drama "hút" người xem từ nhiều mảng → tăng đầu tư
                     </div>
                 </div>
@@ -1295,7 +1681,7 @@
                     <div class="olap-tag" style="color:var(--teal)">🗂 Taste Map</div>
                     <div class="olap-name">Category Taste</div>
                     <div class="olap-q">Khẩu vị chi tiết nào chiếm ưu thế mỗi nhóm?</div>
-                    <div class="olap-insight" style="background:rgba(13,148,136,0.08);color:#99f6e4;">
+                    <div class="olap-insight" style="background:rgba(13,148,136,0.08);color:var(--teal);">
                         "Phim Truyen-Truyen Hinh" = combo #1 → bundle content
                     </div>
                 </div>
@@ -1307,7 +1693,7 @@
         <div class="slide" id="slide-6">
             <div class="slide-label">Chapter IV · Highlight Insights</div>
             <div class="slide-title">Phát Hiện Từ <span class="highlight">Dữ Liệu Thực</span></div>
-            
+
             <!-- Tabs Navigation -->
             <div class="pbi-tabs">
                 <button class="pbi-tab active" onclick="switchPbiTab(this, 'dashboard')">📊 Live Dashboard</button>
@@ -1322,14 +1708,14 @@
                         <span class="pbi-dot yellow"></span>
                         <span class="pbi-dot green"></span>
                         <span class="pbi-title">Power BI Service — Interactive Marketing Analytics Dashboard</span>
-                        <a href="https://app.powerbi.com/view?r=eyJrIjoiZmY2NTJkOTgtOWM3Yi00MmQ4LWJiZmUtNjM4YjcwOWQxZWMwIiwidCI6Ijk4YWRhNjgwLWUzZjQtNDhjYi04ZmJiLWM4YjEwY2I5N2FlZCIsImMiOjEwfQ%3D%3D" 
-                           target="_blank" class="pbi-external-btn">
+                        <a href="https://app.powerbi.com/view?r=eyJrIjoiZmY2NTJkOTgtOWM3Yi00MmQ4LWJiZmUtNjM4YjcwOWQxZWMwIiwidCI6Ijk4YWRhNjgwLWUzZjQtNDhjYi04ZmJiLWM4YjEwY2I5N2FlZCIsImMiOjEwfQ%3D%3D"
+                            target="_blank" class="pbi-external-btn">
                             <span>Mở Tab Mới</span> ↗
                         </a>
                     </div>
-                    <iframe class="pbi-iframe" 
-                            src="https://app.powerbi.com/view?r=eyJrIjoiZmY2NTJkOTgtOWM3Yi00MmQ4LWJiZmUtNjM4YjcwOWQxZWMwIiwidCI6Ijk4YWRhNjgwLWUzZjQtNDhjYi04ZmJiLWM4YjEwY2I5N2FlZCIsImMiOjEwfQ%3D%3D" 
-                            allowFullScreen="true"></iframe>
+                    <iframe class="pbi-iframe"
+                        src="https://app.powerbi.com/view?r=eyJrIjoiZmY2NTJkOTgtOWM3Yi00MmQ4LWJiZmUtNjM4YjcwOWQxZWMwIiwidCI6Ijk4YWRhNjgwLWUzZjQtNDhjYi04ZmJiLWM4YjEwY2I5N2FlZCIsImMiOjEwfQ%3D%3D"
+                        allowFullScreen="true"></iframe>
                 </div>
             </div>
 
@@ -1341,8 +1727,10 @@
                         style="display:flex;align-items:center;gap:16px;background:var(--glass);border:1px solid var(--glass-border);border-left:3px solid var(--cyan);border-radius:12px;padding:14px 18px;">
                         <div style="font-size:24px;">📊</div>
                         <div style="text-align:left;">
-                            <div style="font-size:13px;font-weight:700;margin-bottom:3px;">Truyền Hình thống trị — nhưng không phải "vua giữ chân"</div>
-                            <div style="font-size:12px;color:var(--gray);">1.6M người xem Truyền Hình, nhưng tỷ lệ trung thành thấp hơn Thiếu Nhi & Thể Thao. Quy mô ≠ Chất lượng retention.</div>
+                            <div style="font-size:13px;font-weight:700;margin-bottom:3px;">Truyền Hình thống trị — nhưng
+                                không phải "vua giữ chân"</div>
+                            <div style="font-size:12px;color: #334155;">1.6M người xem Truyền Hình, nhưng tỷ lệ trung
+                                thành thấp hơn Thiếu Nhi & Thể Thao. Quy mô ≠ Chất lượng retention.</div>
                         </div>
                         <div class="badge" style="flex-shrink:0;">Line+Column Chart</div>
                     </div>
@@ -1351,8 +1739,10 @@
                         style="display:flex;align-items:center;gap:16px;background:var(--glass);border:1px solid var(--glass-border);border-left:3px solid var(--green);border-radius:12px;padding:14px 18px;">
                         <div style="font-size:24px;">🎯</div>
                         <div style="text-align:left;">
-                            <div style="font-size:13px;font-weight:700;margin-bottom:3px;">Tất cả 14 thể loại đều tăng trưởng tìm kiếm</div>
-                            <div style="font-size:12px;color:var(--gray);">Waterfall chart: Horror & K Drama dẫn đầu +1000%. Không có thể loại nào giảm — thị trường OTT đang bùng nổ.</div>
+                            <div style="font-size:13px;font-weight:700;margin-bottom:3px;">Tất cả 14 thể loại đều tăng
+                                trưởng tìm kiếm</div>
+                            <div style="font-size:12px;color: #334155;">Waterfall chart: Horror & K Drama dẫn đầu
+                                +1000%. Không có thể loại nào giảm — thị trường OTT đang bùng nổ.</div>
                         </div>
                         <div class="badge green" style="flex-shrink:0;">Waterfall Chart</div>
                     </div>
@@ -1361,8 +1751,10 @@
                         style="display:flex;align-items:center;gap:16px;background:var(--glass);border:1px solid var(--glass-border);border-left:3px solid var(--amber);border-radius:12px;padding:14px 18px;">
                         <div style="font-size:24px;">🔀</div>
                         <div style="text-align:left;">
-                            <div style="font-size:13px;font-weight:700;margin-bottom:3px;">K Drama là "thỏi nam châm" hút người xem đa nguồn</div>
-                            <div style="font-size:12px;color:var(--gray);">Sankey diagram: K Drama nhận dòng di cư từ Drama, Animation, Action, Comedy → Tín hiệu tăng đầu tư bản quyền.</div>
+                            <div style="font-size:13px;font-weight:700;margin-bottom:3px;">K Drama là "thỏi nam châm"
+                                hút người xem đa nguồn</div>
+                            <div style="font-size:12px;color: #334155;">Sankey diagram: K Drama nhận dòng di cư từ
+                                Drama, Animation, Action, Comedy → Tín hiệu tăng đầu tư bản quyền.</div>
                         </div>
                         <div class="badge amber" style="flex-shrink:0;">Sankey Diagram</div>
                     </div>
@@ -1371,8 +1763,10 @@
                         style="display:flex;align-items:center;gap:16px;background:var(--glass);border:1px solid var(--glass-border);border-left:3px solid var(--rose);border-radius:12px;padding:14px 18px;">
                         <div style="font-size:24px;">🗺️</div>
                         <div style="text-align:left;">
-                            <div style="font-size:13px;font-weight:700;margin-bottom:3px;">"Phim Truyen-Truyen Hinh" là khẩu vị combo phổ biến nhất</div>
-                            <div style="font-size:12px;color:var(--gray);">Treemap: người xem phim thường kết hợp Truyền Hình. Bundle 2 thể loại này = tối ưu trải nghiệm người dùng.</div>
+                            <div style="font-size:13px;font-weight:700;margin-bottom:3px;">"Phim Truyen-Truyen Hinh" là
+                                khẩu vị combo phổ biến nhất</div>
+                            <div style="font-size:12px;color: #334155;">Treemap: người xem phim thường kết hợp Truyền
+                                Hình. Bundle 2 thể loại này = tối ưu trải nghiệm người dùng.</div>
                         </div>
                         <div class="badge rose" style="flex-shrink:0;">Treemap</div>
                     </div>
@@ -1381,73 +1775,13 @@
             </div>
         </div>
 
-        <!-- SLIDE 7: KÊTS QUẢ & TRIỂN KHAI -->
-        <div class="slide" id="slide-7">
-            <div class="slide-label">Chapter V · Triển Khai & Kết Luận</div>
-            <div class="slide-title">Kết Quả & <span class="highlight">Giá Trị Thực Tiễn</span></div>
-            <div class="result-row stagger" style="margin-bottom:20px;">
-                <div class="result-item">
-                    <div class="result-big" style="color:var(--cyan)">2M+</div>
-                    <div class="result-label">Bản ghi<br>đã xử lý</div>
-                </div>
-                <div class="result-item">
-                    <div class="result-big" style="color:var(--green)">5</div>
-                    <div class="result-label">Bảng Star Schema<br>trên BigQuery</div>
-                </div>
-                <div class="result-item">
-                    <div class="result-big" style="color:var(--amber)">6</div>
-                    <div class="result-label">Báo cáo OLAP<br>tự động</div>
-                </div>
-                <div class="result-item">
-                    <div class="result-big" style="color:var(--rose)">1</div>
-                    <div class="result-label">Lệnh deploy<br>docker-compose up</div>
-                </div>
-            </div>
-            <div style="display:flex;gap:14px;width:100%;max-width:820px;" class="stagger">
-                <div
-                    style="flex:1;background:var(--glass);border:1px solid var(--glass-border);border-radius:14px;padding:16px;">
-                    <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--cyan);">📊 Power BI
-                        Dashboard</div>
-                    <div style="font-size:12px;color:var(--gray);line-height:1.6;">
-                        2 trang phân tích chuyên sâu<br>
-                        Kết nối trực tiếp với BigQuery<br>
-                        Publish lên Power BI Service
-                    </div>
-                </div>
-                <div
-                    style="flex:1;background:var(--glass);border:1px solid var(--glass-border);border-radius:14px;padding:16px;">
-                    <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--green);">🌐 Streamlit Web
-                        App</div>
-                    <div style="font-size:12px;color:var(--gray);line-height:1.6;">
-                        Nhúng iframe Power BI<br>
-                        C-level xem báo cáo qua web<br>
-                        Không cần cài phần mềm
-                    </div>
-                </div>
-                <div
-                    style="flex:1;background:var(--glass);border:1px solid var(--glass-border);border-radius:14px;padding:16px;">
-                    <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--amber);">🐳 Docker
-                        Container</div>
-                    <div style="font-size:12px;color:var(--gray);line-height:1.6;">
-                        Python 3.11 + Java JRE + Spark<br>
-                        2 service: pipeline + dashboard<br>
-                        Chạy mọi môi trường, 1 lệnh
-                    </div>
-                </div>
-            </div>
-            <div class="insight-box stagger" style="margin-top:16px;">
-                <p><strong>🎯 Kết luận:</strong> Hệ thống Data Pipeline E2E hoàn chỉnh — áp dụng Big Data (PySpark),
-                    Cloud DW (BigQuery), AI (Vertex AI), và Data Modeling chuẩn (Star Schema). 6 báo cáo OLAP cung cấp
-                    insight hành động cụ thể cho Marketing: loyalty, chuyển đổi VIP, xu hướng search, và dòng dịch
-                    chuyển sở thích.</p>
-            </div>
-        </div>
+
 
     </div>
 
     <script>
         let current = 0;
-        const total = 8;
+        const total = 7;
 
         // Cursor
         const cursor = document.getElementById('cursor');
@@ -1513,6 +1847,359 @@
             });
             document.getElementById(`pbi-panel-${tabId}`).classList.add('active');
         }
+
+        // Tab switching for Slide 4 Tables
+        function switchTableTab(btn, tabId) {
+            const slide = btn.closest('.slide');
+            slide.querySelectorAll('.pbi-tabs .pbi-tab').forEach(b => {
+                b.classList.remove('active');
+            });
+            btn.classList.add('active');
+
+            slide.querySelectorAll('.pbi-panel').forEach(panel => {
+                if (panel.id.startsWith('table-panel-')) {
+                    panel.classList.remove('active');
+                }
+            });
+            document.getElementById(`table-panel-${tabId}`).classList.add('active');
+        }
+
+        // ----------------------------------------------------
+        // DYNAMIC CAROUSEL FOR STEP 2: FACT CUSTOMER 360 TABLE
+        // ----------------------------------------------------
+
+        // 5 sample rows of actual Parquet data
+        const factTableData = [
+            {
+                Profile_ID: "0027835",
+                most_searched_prev: "lời nói dối của hồ ly",
+                count_prev: 1,
+                most_searched_curr: "minh lan truyện",
+                count_curr: 1,
+                category_prev: "Drama",
+                category_curr: "C Drama",
+                Trending_Type: "Changed",
+                Previous: "Drama-C Drama",
+                proxy_isp: "viettel",
+                platform: "web-playfpt",
+                networkType: "—",
+                Total_Giai_Tri: 0,
+                Total_Phim_Truyen: 0,
+                Total_The_Thao: 0,
+                Total_Thieu_Nhi: 0,
+                Total_Truyen_Hinh: 0,
+                MostWatch: "—",
+                Taste: "—",
+                Active: "—",
+                data_source: "log_search",
+                total_watch_duration: 0,
+                service_key: "nan",
+                snapshot_date_key: 20220714
+            },
+            {
+                Profile_ID: "0201199",
+                most_searched_prev: "vagabond",
+                count_prev: 1,
+                most_searched_curr: "người thầy y đức 2",
+                count_curr: 1,
+                category_prev: "K Drama",
+                category_curr: "K Drama",
+                Trending_Type: "Unchanged",
+                Previous: "Unchanged",
+                proxy_isp: "fpt",
+                platform: "android",
+                networkType: "wifi",
+                Total_Giai_Tri: 0,
+                Total_Phim_Truyen: 0,
+                Total_The_Thao: 0,
+                Total_Thieu_Nhi: 0,
+                Total_Truyen_Hinh: 0,
+                MostWatch: "—",
+                Taste: "—",
+                Active: "—",
+                data_source: "log_search",
+                total_watch_duration: 0,
+                service_key: "nan",
+                snapshot_date_key: 20220714
+            },
+            {
+                Profile_ID: "06009865",
+                most_searched_prev: "w two worlds",
+                count_prev: 1,
+                most_searched_curr: "xuyên vào sách tôi muốn sống tới cùng",
+                count_curr: 1,
+                category_prev: "K Drama",
+                category_curr: "—",
+                Trending_Type: "Changed",
+                Previous: "K Drama",
+                proxy_isp: "viettel",
+                platform: "android",
+                networkType: "wifi",
+                Total_Giai_Tri: 0,
+                Total_Phim_Truyen: 0,
+                Total_The_Thao: 0,
+                Total_Thieu_Nhi: 0,
+                Total_Truyen_Hinh: 0,
+                MostWatch: "—",
+                Taste: "—",
+                Active: "—",
+                data_source: "log_search",
+                total_watch_duration: 0,
+                service_key: "nan",
+                snapshot_date_key: 20220714
+            },
+            {
+                Profile_ID: "06024778",
+                most_searched_prev: "trung quốc",
+                count_prev: 1,
+                most_searched_curr: "tinh hà xán lan",
+                count_curr: 1,
+                category_prev: "—",
+                category_curr: "—",
+                Trending_Type: "Changed",
+                Previous: "—",
+                proxy_isp: "vnpt",
+                platform: "android",
+                networkType: "wifi",
+                Total_Giai_Tri: 0,
+                Total_Phim_Truyen: 0,
+                Total_The_Thao: 0,
+                Total_Thieu_Nhi: 0,
+                Total_Truyen_Hinh: 0,
+                MostWatch: "—",
+                Taste: "—",
+                Active: "—",
+                data_source: "log_search",
+                total_watch_duration: 0,
+                service_key: "nan",
+                snapshot_date_key: 20220714
+            },
+            {
+                Profile_ID: "06050603",
+                most_searched_prev: "kimotsuno",
+                count_prev: 1,
+                most_searched_curr: "boku no hẻo",
+                count_curr: 1,
+                category_prev: "Animation",
+                category_curr: "—",
+                Trending_Type: "Changed",
+                Previous: "Animation",
+                proxy_isp: "vnpt",
+                platform: "web-playfpt",
+                networkType: "—",
+                Total_Giai_Tri: 0,
+                Total_Phim_Truyen: 0,
+                Total_The_Thao: 0,
+                Total_Thieu_Nhi: 0,
+                Total_Truyen_Hinh: 0,
+                MostWatch: "—",
+                Taste: "—",
+                Active: "—",
+                data_source: "log_search",
+                total_watch_duration: 0,
+                service_key: "nan",
+                snapshot_date_key: 20220714
+            }
+        ];
+
+        // 7 pages of column segment configurations covering all 24 columns
+        const factTablePages = [
+            {
+                title: "1. Hồ Sơ Người Dùng & Nhật Ký Tìm Kiếm Kỳ Trước",
+                columns: [
+                    { label: "Profile_ID", key: "Profile_ID" },
+                    { label: "most_searched_prev", key: "most_searched_prev" },
+                    { label: "count_prev", key: "count_prev" },
+                    { label: "category_prev", key: "category_prev" },
+                    { label: "proxy_isp", key: "proxy_isp" },
+                    { label: "platform", key: "platform" }
+                ]
+            },
+            {
+                title: "2. Nhật Ký Tìm Kiếm Kỳ Hiện Tại & Mạng Kết Nối",
+                columns: [
+                    { label: "Profile_ID", key: "Profile_ID" },
+                    { label: "most_searched_curr", key: "most_searched_curr" },
+                    { label: "count_curr", key: "count_curr" },
+                    { label: "category_curr", key: "category_curr" },
+                    { label: "networkType", key: "networkType" },
+                    { label: "platform", key: "platform" }
+                ]
+            },
+            {
+                title: "3. Phân Tích Xu Hướng (Trending Analysis)",
+                columns: [
+                    { label: "Profile_ID", key: "Profile_ID" },
+                    { label: "category_prev", key: "category_prev" },
+                    { label: "category_curr", key: "category_curr" },
+                    { label: "Trending_Type", key: "Trending_Type" },
+                    { label: "Previous", key: "Previous" },
+                    { label: "data_source", key: "data_source" }
+                ]
+            },
+            {
+                title: "4. Thời Lượng Xem Theo Thể Loại — Giải Trí, Phim, Thể Thao",
+                columns: [
+                    { label: "Profile_ID", key: "Profile_ID" },
+                    { label: "Total_Giai_Tri", key: "Total_Giai_Tri" },
+                    { label: "Total_Phim_Truyen", key: "Total_Phim_Truyen" },
+                    { label: "Total_The_Thao", key: "Total_The_Thao" },
+                    { label: "total_watch_duration", key: "total_watch_duration" }
+                ]
+            },
+            {
+                title: "5. Metadata & Trạng Thái Hoạt Động (Mockup View)",
+                columns: [
+                    { label: "Profile_ID", key: "Profile_ID" },
+                    { label: "service_key", key: "service_key" },
+                    { label: "date_key", key: "snapshot_date_key" },
+                    { label: "data_source", key: "data_source" },
+                    { label: "Active", key: "Active" },
+                    { label: "Taste", key: "Taste" },
+                    { label: "Watch_Duration", key: "total_watch_duration" }
+                ]
+            },
+            {
+                title: "6. Thời Lượng Xem Theo Thể Loại — Thiếu Nhi, Truyền Hình",
+                columns: [
+                    { label: "Profile_ID", key: "Profile_ID" },
+                    { label: "Total_Thieu_Nhi", key: "Total_Thieu_Nhi" },
+                    { label: "Total_Truyen_Hinh", key: "Total_Truyen_Hinh" },
+                    { label: "MostWatch", key: "MostWatch" },
+                    { label: "total_watch_duration", key: "total_watch_duration" }
+                ]
+            },
+            {
+                title: "7. Thông Tin Hạ Tầng Mạng & Khóa Ngoại",
+                columns: [
+                    { label: "Profile_ID", key: "Profile_ID" },
+                    { label: "proxy_isp", key: "proxy_isp" },
+                    { label: "platform", key: "platform" },
+                    { label: "networkType", key: "networkType" },
+                    { label: "service_key", key: "service_key" },
+                    { label: "snapshot_date_key", key: "snapshot_date_key" }
+                ]
+            }
+        ];
+
+        // Current active Fact Table page index
+        let currentFactTablePage = 4; // default to page 5 (mockup page)
+
+        function switchFactTablePage(index) {
+            if (index < 0 || index >= factTablePages.length) return;
+            currentFactTablePage = index;
+
+            // 1. Update dot active styles
+            const container = document.getElementById("table-panel-fact360");
+            if (!container) return;
+
+            container.querySelectorAll(".table-dot").forEach((dot, idx) => {
+                if (idx === index) {
+                    dot.classList.add("active");
+                    dot.setAttribute("aria-pressed", "true");
+                } else {
+                    dot.classList.remove("active");
+                    dot.setAttribute("aria-pressed", "false");
+                }
+            });
+
+            // 2. Update Title Description
+            const titleEl = document.getElementById("fact-table-title");
+            if (titleEl) {
+                titleEl.textContent = factTablePages[index].title;
+            }
+
+            // 3. Rebuild headers and rows
+            const headerRow = document.getElementById("fact-table-header");
+            const bodyEl = document.getElementById("fact-table-body");
+            const config = factTablePages[index];
+
+            if (headerRow && bodyEl) {
+                // Apply a subtle fade out/in effect
+                headerRow.style.opacity = "0.3";
+                bodyEl.style.opacity = "0.3";
+
+                setTimeout(() => {
+                    // Rebuild Headers
+                    headerRow.innerHTML = "";
+                    config.columns.forEach(col => {
+                        const th = document.createElement("th");
+                        th.style.padding = "10px 12px";
+                        th.style.borderBottom = "1px solid rgba(245,158,11,0.2)";
+                        th.style.fontWeight = "700";
+                        th.style.fontSize = "11px";
+                        th.style.textTransform = "uppercase";
+                        th.style.letterSpacing = "0.5px";
+                        th.textContent = col.label;
+
+                        // Add beautiful CSS tools/tips on foreign key columns
+                        if (col.key === "service_key") {
+                            th.title = "Khóa liên kết sang bảng Dim_Service.parquet (Chi tiết dịch vụ)";
+                            th.style.cursor = "help";
+                            th.style.textDecoration = "underline dashed rgba(245,158,11,0.5)";
+                        } else if (col.key === "snapshot_date_key") {
+                            th.title = "Khóa liên kết sang bảng Dim_Date.parquet (Trục thời gian)";
+                            th.style.cursor = "help";
+                            th.style.textDecoration = "underline dashed rgba(245,158,11,0.5)";
+                        } else if (col.key === "Profile_ID") {
+                            th.title = "Khóa định danh khách hàng liên kết với Dim_User / Dim_Cust";
+                            th.style.cursor = "help";
+                        }
+
+                        headerRow.appendChild(th);
+                    });
+
+                    // Rebuild Rows
+                    bodyEl.innerHTML = "";
+                    factTableData.forEach((row, rowIndex) => {
+                        const tr = document.createElement("tr");
+                        if (rowIndex < factTableData.length - 1) {
+                            tr.style.borderBottom = "1px solid rgba(15,30,60,0.04)";
+                        }
+
+                        config.columns.forEach(col => {
+                            const td = document.createElement("td");
+                            td.style.padding = "10px 12px";
+                            const val = row[col.key];
+
+                            if (col.key === "Profile_ID") {
+                                td.style.color = "var(--white)";
+                                td.style.fontFamily = "'JetBrains Mono', monospace";
+                                td.style.fontWeight = "600";
+                                td.textContent = val;
+                            } else if (col.key === "total_watch_duration") {
+                                td.textContent = val;
+                            } else if (val === "nan" || val === "—") {
+                                td.innerHTML = `<span style="opacity:0.4;">—</span>`;
+                            } else {
+                                td.textContent = val;
+                            }
+
+                            tr.appendChild(td);
+                        });
+                        bodyEl.appendChild(tr);
+                    });
+
+                    // Fade back in
+                    headerRow.style.opacity = "1";
+                    bodyEl.style.opacity = "1";
+                }, 80);
+            }
+        }
+
+        function prevFactTablePage() {
+            let nextIndex = currentFactTablePage - 1;
+            if (nextIndex < 0) nextIndex = factTablePages.length - 1;
+            switchFactTablePage(nextIndex);
+        }
+
+        function nextFactTablePage() {
+            let nextIndex = (currentFactTablePage + 1) % factTablePages.length;
+            switchFactTablePage(nextIndex);
+        }
+
+        // Initialize Carousel on page load
+        switchFactTablePage(4);
 
         updateProgressBar();
     </script>
