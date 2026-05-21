@@ -35,9 +35,20 @@ def get_spark_session():
 def create_obt(spark):
     """Tạo One Big Table (OBT) bằng cách gộp search và content logs."""
     print("Đang đọc và chuẩn hóa dữ liệu OBT...")
-    df_search = spark.read.parquet(SEARCH_LOG_PATH) \
+    df_search_agg = spark.read.parquet(SEARCH_LOG_PATH) \
         .withColumnRenamed("user_id", "Profile_ID") \
         .withColumn("has_search", F.lit(True))
+
+    # Đọc thêm thông tin thiết bị (proxy_isp, platform, networkType) từ raw log search để làm giàu dữ liệu
+    try:
+        df_search_raw = spark.read.parquet("log_search/*/*.parquet") \
+            .withColumnRenamed("user_id", "Profile_ID") \
+            .select("Profile_ID", "proxy_isp", "platform", "networkType") \
+            .dropDuplicates(["Profile_ID"])
+        df_search = df_search_agg.join(df_search_raw, on="Profile_ID", how="left")
+    except Exception as e:
+        print(f"⚠️ Cảnh báo: Không thể nạp thông tin thiết bị từ raw log search ({e})")
+        df_search = df_search_agg
 
     df_content = spark.read.parquet(CONTENT_LOG_PATH) \
         .withColumnRenamed("Contract", "Profile_ID") \
@@ -68,15 +79,18 @@ def create_dim_user(spark, df_obt, df_search):
         if col in available_cols:
             select_cols.append(col)
     
-    if len(select_cols) == 1:
-        # Fallback: Nếu không có cột nào, tạo cột phân loại từ data_source
-        return df_obt.select("Profile_ID") \
-            .distinct() \
-            .withColumn("user_segment", 
-                F.when(F.col("Profile_ID").startswith("TV"), "TV_User")
-                 .otherwise("Digital_User"))
-    
-    return df_search.select(*select_cols).dropDuplicates(["Profile_ID"])
+    # Tạo Dim_User từ df_search nếu có thêm cột thông tin thiết bị, nếu không dùng fallback từ df_obt
+    if len(select_cols) > 1:
+        dim_user = df_search.select(*select_cols).dropDuplicates(["Profile_ID"])
+    else:
+        dim_user = df_obt.select("Profile_ID").distinct()
+        
+    # Luôn bổ sung cột user_segment để phân loại giao diện người dùng
+    dim_user = dim_user.withColumn("user_segment", 
+        F.when(F.col("Profile_ID").startswith("TV"), "TV_User")
+         .otherwise("Digital_User"))
+         
+    return dim_user
 
 def create_dim_cust(spark, df_content):
     """Tạo Dim_Cust: Thuộc tính TĨNH và Phân loại khách hàng (SCD Type 1)."""
@@ -139,9 +153,9 @@ def create_dim_date(spark, start="2022-06-01", end="2022-07-31"):
         "month_name", "quarter", "day_of_week"
     ])
 
-def create_fact_customer_360(df_obt, dim_service, snapshot_date_key=20220731):
+def create_fact_customer_360(df_obt, dim_service, snapshot_date_key=20220714):
     """Tạo Fact với metric rõ ràng và xử lý NULL từ outer join."""
-    print(f"Đang tạo Fact_Customer_360 với date_key={snapshot_date_key}...")
+    print(f"Đang tạo Fact_Customer_360 với snapshot_date_key={snapshot_date_key}...")
     
     # Chuẩn hóa tên cột
     if "MostWacth" in df_obt.columns:
@@ -177,7 +191,7 @@ def create_fact_customer_360(df_obt, dim_service, snapshot_date_key=20220731):
         F.broadcast(service_lookup),
         df_obt["MostWatch"] == service_lookup["Type"], "left"
     ).drop("Type") \
-     .withColumn("date_key", F.lit(snapshot_date_key))
+     .withColumn("snapshot_date_key", F.lit(snapshot_date_key))
     
     return fact
 

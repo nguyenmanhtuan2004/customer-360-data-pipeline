@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer 360 — 90s Pitch</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --navy: #0F1E3C;
+            --blue: #1A56DB;
+            --cyan: #0EA5E9;
+            --teal: #0D9488;
+            --amber: #F59E0B;
+            --rose: #F43F5E;
+            --green: #10B981;
+            --white: #F8FAFC;
+            --gray: #94A3B8;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background: var(--navy);
+            color: var(--white);
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            cursor: none;
+        }
+
+        /* Custom cursor */
+        .cursor {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: var(--cyan);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s;
+            mix-blend-mode: screen;
+        }
+
+        /* Background grid */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(26, 86, 219, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(26, 86, 219, 0.08) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+        }
+
+        .bg-glow {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(14, 165, 233, 0.12), transparent 70%);
+            pointer-events: none;
+        }
+
+        /* PROGRESS BAR */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--cyan), var(--teal));
+            transition: width 1s linear;
+            z-index: 100;
+            box-shadow: 0 0 12px var(--cyan);
+        }
+
+        /* TIMER */
+        .timer {
+            position: fixed;
+            top: 18px;
+            right: 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--gray);
+            z-index: 100;
+            letter-spacing: 1px;
+        }
+
+        .timer span {
+            color: var(--cyan);
+            font-weight: 700;
+        }
+
+        /* SLIDE COUNTER */
+        .slide-counter {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 100;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .dot.active {
+            background: var(--cyan);
+            transform: scale(1.5);
+        }
+
+        /* NAV BUTTONS */
+        .nav-btn {
+            position: fixed;
+            top: 50%;
+            z-index: 100;
+            transform: translateY(-50%);
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: var(--white);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-btn:hover {
+            background: rgba(14, 165, 233, 0.2);
+            border-color: var(--cyan);
+        }
+
+        .nav-btn.prev {
+            left: 16px;
+        }
+
+        .nav-btn.next {
+            right: 16px;
+        }
+
+        /* SLIDES CONTAINER */
+        .slides {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* SLIDE */
+        .slide {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 80px 60px;
+            opacity: 0;
+            transform: translateX(60px);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: all;
+        }
+
+        .slide.exit {
+            opacity: 0;
+            transform: translateX(-60px);
+        }
+
+        /* ── SLIDE COMPONENTS ── */
+
+        .slide-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--cyan);
+            margin-bottom: 16px;
+            opacity: 0.8;
+        }
+
+        .slide-title {
+            font-size: clamp(28px, 4vw, 52px);
+            font-weight: 900;
+            line-height: 1.1;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .slide-sub {
+            font-size: clamp(14px, 1.6vw, 18px);
+            color: var(--gray);
+            text-align: center;
+            max-width: 680px;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .highlight {
+            color: var(--cyan);
+        }
+
+        .hl-amber {
+            color: var(--amber);
+        }
+
+        .hl-green {
+            color: var(--green);
+        }
+
+        .hl-rose {
+            color: var(--rose);
+        }
+
+        /* Cards */
+        .cards {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px 24px;
+            flex: 1 1 200px;
+            max-width: 220px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+        }
+
+        .card.c1::before {
+            background: linear-gradient(90deg, var(--cyan), var(--blue));
+        }
+
+        .card.c2::before {
+            background: linear-gradient(90deg, var(--teal), var(--green));
+        }
+
+        .card.c3::before {
+            background: linear-gradient(90deg, var(--amber), var(--rose));
+        }
+
+        .card.c4::before {
+            background: linear-gradient(90deg, var(--rose), #a855f7);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(14, 165, 233, 0.4);
+        }
+
+        .card-icon {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .card-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 4px;
+        }
+
+        .card-desc {
+            font-size: 11px;
+            color: var(--gray);
+            line-height: 1.5;
+        }
+
+        .card-num {
+            font-size: 26px;
+            font-weight: 900;
+            color: var(--cyan);
+            margin-bottom: 4px;
+        }
+
+        /* Pipeline flow */
+        .pipeline {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            flex-wrap: nowrap;
+            width: 100%;
+            max-width: 860px;
+            justify-content: center;
+        }
+
+        .pipe-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+
+        .pipe-box {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 14px 10px;
+            text-align: center;
+            width: 100%;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .pipe-box:hover {
+            border-color: var(--cyan);
+            background: rgba(14, 165, 233, 0.08);
+        }
+
+        .pipe-icon {
+            font-size: 22px;
+            margin-bottom: 6px;
+        }
+
+        .pipe-name {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--white);
+        }
+
+        .pipe-tech {
+            font-size: 9px;
+            color: var(--cyan);
+            margin-top: 2px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .pipe-arrow {
+            font-size: 18px;
+            color: var(--cyan);
+            margin: 0 4px;
+            flex-shrink: 0;
+            opacity: 0.6;
+        }
+
+        /* Table */
+        .mini-table {
+            width: 100%;
+            max-width: 760px;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .mini-table th {
+            background: rgba(26, 86, 219, 0.3);
+            color: var(--cyan);
+            padding: 10px 16px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(14, 165, 233, 0.2);
+        }
+
+        .mini-table td {
+            padding: 9px 16px;
+            color: var(--gray);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 12px;
+        }
+
+        .mini-table tr:hover td {
+            background: var(--glass);
+            color: var(--white);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            background: rgba(14, 165, 233, 0.15);
+            color: var(--cyan);
+            border: 1px solid rgba(14, 165, 233, 0.3);
+        }
+
+        .badge.amber {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--amber);
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .badge.green {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--green);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .badge.rose {
+            background: rgba(244, 63, 94, 0.15);
+            color: var(--rose);
+            border-color: rgba(244, 63, 94, 0.3);
+        }
+
+        /* OLAP grid */
+        .olap-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            width: 100%;
+            max-width: 860px;
+        }
+
+        .olap-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 16px 18px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .olap-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .olap-num {
+            position: absolute;
+            top: 10px;
+            right: 14px;
+            font-size: 32px;
+            font-weight: 900;
+            opacity: 0.08;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .olap-tag {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 6px;
+        }
+
+        .olap-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 4px;
+        }
+
+        .olap-q {
+            font-size: 11px;
+            color: var(--gray);
+            line-height: 1.4;
+        }
+
+        .olap-insight {
+            margin-top: 8px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 10px;
+            line-height: 1.4;
+            font-weight: 600;
+        }
+
+        /* Star schema */
+        .star-wrap {
+            position: relative;
+            width: 400px;
+            height: 320px;
+        }
+
+        .star-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, var(--blue), var(--cyan));
+            border-radius: 14px;
+            padding: 16px 22px;
+            text-align: center;
+            z-index: 2;
+            box-shadow: 0 0 30px rgba(14, 165, 233, 0.3);
+        }
+
+        .star-center-label {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            letter-spacing: 1px;
+        }
+
+        .star-center-name {
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .star-center-count {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 2px;
+            font-family: 'JetBrains Mono';
+        }
+
+        .dim-node {
+            position: absolute;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            padding: 10px 14px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            font-size: 12px;
+        }
+
+        .dim-node-name {
+            font-weight: 700;
+            color: var(--white);
+        }
+
+        .dim-node-sub {
+            font-size: 10px;
+            color: var(--gray);
+        }
+
+        .dim-node.top {
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .dim-node.bottom {
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .dim-node.left {
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .dim-node.right {
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .star-line {
+            position: absolute;
+            background: rgba(14, 165, 233, 0.25);
+            transform-origin: left center;
+            height: 1px;
+            z-index: 1;
+        }
+
+        /* Insight box */
+        .insight-box {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            border-left: 3px solid var(--amber);
+            border-radius: 12px;
+            padding: 16px 20px;
+            max-width: 740px;
+            margin-top: 20px;
+        }
+
+        .insight-box strong {
+            color: var(--amber);
+        }
+
+        .insight-box p {
+            font-size: 13px;
+            color: #e2c97e;
+            line-height: 1.6;
+        }
+
+        /* Results section */
+        .result-row {
+            display: flex;
+            gap: 14px;
+            width: 100%;
+            max-width: 860px;
+            justify-content: center;
+        }
+
+        .result-item {
+            flex: 1;
+            max-width: 200px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 18px 16px;
+            text-align: center;
+        }
+
+        .result-big {
+            font-size: 32px;
+            font-weight: 900;
+            font-family: 'JetBrains Mono';
+        }
+
+        .result-label {
+            font-size: 11px;
+            color: var(--gray);
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+
+        /* COVER SLIDE SPECIFICS */
+        .cover-logo {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            color: var(--cyan);
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            opacity: 0.7;
+        }
+
+        .cover-flow {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--gray);
+            margin-top: 24px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .cover-flow .step {
+            background: rgba(14, 165, 233, 0.1);
+            border: 1px solid rgba(14, 165, 233, 0.2);
+            border-radius: 6px;
+            padding: 6px 12px;
+            color: var(--cyan);
+            font-size: 12px;
+        }
+
+        .cover-flow .arrow {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Stagger animation for child elements */
+        .stagger>* {
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .slide.active .stagger>* {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .slide.active .stagger>*:nth-child(1) {
+            transition-delay: 0.1s;
+        }
+
+        .slide.active .stagger>*:nth-child(2) {
+            transition-delay: 0.2s;
+        }
+
+        .slide.active .stagger>*:nth-child(3) {
+            transition-delay: 0.3s;
+        }
+
+        .slide.active .stagger>*:nth-child(4) {
+            transition-delay: 0.4s;
+        }
+
+        .slide.active .stagger>*:nth-child(5) {
+            transition-delay: 0.5s;
+        }
+
+        .slide.active .stagger>*:nth-child(6) {
+            transition-delay: 0.6s;
+        }
+
+        /* Pulse glow on active */
+        @keyframes pulse-glow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 20px rgba(14, 165, 233, 0.2);
+            }
+
+            50% {
+                box-shadow: 0 0 40px rgba(14, 165, 233, 0.4);
+            }
+        }
+
+        .glow {
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+
+        /* Slide-in from bottom */
+        @keyframes floatUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .float-up {
+            animation: floatUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .delay-1 {
+            animation-delay: 0.1s;
+        }
+
+        .delay-2 {
+            animation-delay: 0.2s;
+        }
+
+        .delay-3 {
+            animation-delay: 0.3s;
+        }
+
+        .delay-4 {
+            animation-delay: 0.4s;
+        }
+
+        .delay-5 {
+            animation-delay: 0.5s;
+        }
+
+        .delay-6 {
+            animation-delay: 0.6s;
+        }
+
+        /* ── INTERACTIVE POWER BI DASHBOARD ── */
+        .pbi-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 4px;
+            border-radius: 30px;
+            border: 1px solid var(--glass-border);
+            z-index: 10;
+        }
+
+        .pbi-tab {
+            background: transparent;
+            border: none;
+            color: var(--gray);
+            padding: 8px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            font-family: 'Be Vietnam Pro', sans-serif;
+        }
+
+        .pbi-tab:hover {
+            color: var(--white);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .pbi-tab.active {
+            color: var(--white);
+            background: var(--blue);
+            box-shadow: 0 0 15px rgba(26, 86, 219, 0.4);
+        }
+
+        .pbi-panel {
+            display: none;
+            width: 100%;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .pbi-panel.active {
+            display: flex;
+            animation: floatUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .pbi-container {
+            position: relative;
+            width: 90vw;
+            max-width: 960px;
+            height: 480px;
+            background: rgba(15, 30, 60, 0.6);
+            border: 1.5px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 8px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4),
+                        0 0 30px rgba(14, 165, 233, 0.15);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pbi-container:hover {
+            border-color: rgba(14, 165, 233, 0.4);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5),
+                        0 0 45px rgba(14, 165, 233, 0.35);
+            transform: translateY(-2px);
+        }
+
+        .pbi-header {
+            display: flex;
+            align-items: center;
+            padding: 6px 12px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 8px;
+            gap: 6px;
+        }
+
+        .pbi-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .pbi-dot.red { background: #ff5f56; }
+        .pbi-dot.yellow { background: #ffbd2e; }
+        .pbi-dot.green { background: #27c93f; }
+
+        .pbi-title {
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--gray);
+            margin-left: 8px;
+            flex-grow: 1;
+            letter-spacing: 0.5px;
+            text-align: left;
+        }
+
+        .pbi-external-btn {
+            font-size: 11px;
+            color: var(--cyan);
+            text-decoration: none;
+            background: rgba(14, 165, 233, 0.1);
+            border: 1px solid rgba(14, 165, 233, 0.2);
+            padding: 3px 10px;
+            border-radius: 12px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 600;
+        }
+
+        .pbi-external-btn:hover {
+            background: rgba(14, 165, 233, 0.25);
+            border-color: var(--cyan);
+            color: var(--white);
+            box-shadow: 0 0 10px rgba(14, 165, 233, 0.2);
+        }
+
+        .pbi-iframe {
+            width: 100%;
+            flex-grow: 1;
+            border: none;
+            border-radius: 10px;
+            background: #ffffff;
+        }
+
+        @media (max-height: 768px) {
+            .pbi-container {
+                height: 380px;
+            }
+            .slide {
+                padding: 40px 60px 40px;
+            }
+            .slide-sub {
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="cursor" id="cursor"></div>
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="timer">Slide <span id="slideNum">1</span>/8</div>
+
+    <!-- Slide dots -->
+    <div class="slide-counter" id="dots"></div>
+
+    <!-- Nav buttons -->
+    <button class="nav-btn prev" onclick="prevSlide()">‹</button>
+    <button class="nav-btn next" onclick="nextSlide()">›</button>
+
+    <div class="slides" id="slides">
+
+        <!-- SLIDE 0: COVER -->
+        <div class="slide active" id="slide-0">
+            <div class="cover-logo">Đồ Án Môn Học · Big Data</div>
+            <div class="slide-title float-up">
+                Customer 360 &<br><span class="highlight">Marketing Analytics</span>
+            </div>
+            <div class="slide-sub float-up delay-2">
+                Luồng dữ liệu End-to-End: Raw Log → ETL → Data Warehouse → Dashboard<br>
+                <span style="color:var(--amber); font-size:13px;">Ngành OTT / Truyền hình trực tuyến</span>
+            </div>
+            <div class="cover-flow float-up delay-3">
+                <span class="step">📥 Log Thô</span>
+                <span class="arrow">→</span>
+                <span class="step">⚙️ PySpark ETL</span>
+                <span class="arrow">→</span>
+                <span class="step">☁️ BigQuery</span>
+                <span class="arrow">→</span>
+                <span class="step">📊 OLAP</span>
+                <span class="arrow">→</span>
+                <span class="step">📈 Dashboard</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 1: VẤN ĐỀ & MỤC TIÊU -->
+        <div class="slide" id="slide-1">
+            <div class="slide-label">Chapter I · Giới thiệu</div>
+            <div class="slide-title">Bài Toán & Mục Tiêu</div>
+            <div class="slide-sub">Dữ liệu hành vi người dùng OTT sinh ra mỗi ngày — nhưng chưa được khai thác</div>
+            <div class="cards stagger">
+                <div class="card c1">
+                    <div class="card-icon">🔍</div>
+                    <div class="card-title">Pipeline E2E</div>
+                    <div class="card-desc">Raw Log → ETL → Data Warehouse → Dashboard hoàn chỉnh</div>
+                </div>
+                <div class="card c2">
+                    <div class="card-icon">⭐</div>
+                    <div class="card-title">Star Schema</div>
+                    <div class="card-desc">1 Fact Table + 4 Dim Tables trên Google BigQuery</div>
+                </div>
+                <div class="card c3">
+                    <div class="card-icon">🤖</div>
+                    <div class="card-title">AI Classification</div>
+                    <div class="card-desc">Vertex AI (Gemini 2.5 Flash) phân loại keyword tự động</div>
+                </div>
+                <div class="card c4">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">6 OLAP Reports</div>
+                    <div class="card-desc">Dashboard Power BI + Streamlit Web App, Docker 1 lệnh</div>
+                </div>
+            </div>
+            <div style="display:flex; gap:28px; margin-top:24px;" class="stagger">
+                <div style="text-align:center;">
+                    <div style="font-size:28px;font-weight:900;color:var(--cyan);font-family:'JetBrains Mono'">79,732
+                    </div>
+                    <div style="font-size:11px;color:var(--gray)">Users (Log Search)</div>
+                </div>
+                <div style="width:1px;background:var(--glass-border)"></div>
+                <div style="text-align:center;">
+                    <div style="font-size:28px;font-weight:900;color:var(--green);font-family:'JetBrains Mono'">1.92M
+                    </div>
+                    <div style="font-size:11px;color:var(--gray)">Bản ghi (Log Content)</div>
+                </div>
+                <div style="width:1px;background:var(--glass-border)"></div>
+                <div style="text-align:center;">
+                    <div style="font-size:28px;font-weight:900;color:var(--amber);font-family:'JetBrains Mono'">T6–T7
+                    </div>
+                    <div style="font-size:11px;color:var(--gray)">2022 · So sánh MoM</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: PIPELINE ARCHITECTURE -->
+        <div class="slide" id="slide-2">
+            <div class="slide-label">Chapter II · Kiến trúc</div>
+            <div class="slide-title">Pipeline <span class="highlight">5 Bước</span></div>
+            <div class="pipeline stagger" style="margin-bottom:20px;">
+                <div class="pipe-step">
+                    <div class="pipe-box" style="border-color:rgba(14,165,233,0.3);">
+                        <div class="pipe-icon">📥</div>
+                        <div class="pipe-name">Extract</div>
+                        <div class="pipe-tech">PySpark + Vertex AI</div>
+                    </div>
+                </div>
+                <div class="pipe-arrow">→</div>
+                <div class="pipe-step">
+                    <div class="pipe-box">
+                        <div class="pipe-icon">🔧</div>
+                        <div class="pipe-name">Transform</div>
+                        <div class="pipe-tech">PySpark ETL</div>
+                    </div>
+                </div>
+                <div class="pipe-arrow">→</div>
+                <div class="pipe-step">
+                    <div class="pipe-box">
+                        <div class="pipe-icon">☁️</div>
+                        <div class="pipe-name">Load</div>
+                        <div class="pipe-tech">pandas-gbq</div>
+                    </div>
+                </div>
+                <div class="pipe-arrow">→</div>
+                <div class="pipe-step">
+                    <div class="pipe-box">
+                        <div class="pipe-icon">🗄️</div>
+                        <div class="pipe-name">Stored Proc</div>
+                        <div class="pipe-tech">BigQuery SQL</div>
+                    </div>
+                </div>
+                <div class="pipe-arrow">→</div>
+                <div class="pipe-step">
+                    <div class="pipe-box" style="border-color:rgba(16,185,129,0.3);">
+                        <div class="pipe-icon">📊</div>
+                        <div class="pipe-name">Visualize</div>
+                        <div class="pipe-tech">Power BI + Streamlit</div>
+                    </div>
+                </div>
+            </div>
+            <table class="mini-table stagger">
+                <tr>
+                    <th>Lớp</th>
+                    <th>Công Nghệ</th>
+                    <th>Vai Trò</th>
+                </tr>
+                <tr>
+                    <td>Big Data</td>
+                    <td><span class="badge">PySpark 4.1.1</span></td>
+                    <td style="color:var(--white)">Xử lý phân tán Log thô</td>
+                </tr>
+                <tr>
+                    <td>AI / ML</td>
+                    <td><span class="badge amber">Vertex AI · Gemini 2.5</span></td>
+                    <td style="color:var(--white)">Phân loại keyword tự động</td>
+                </tr>
+                <tr>
+                    <td>Cloud DW</td>
+                    <td><span class="badge green">Google BigQuery</span></td>
+                    <td style="color:var(--white)">Kho dữ liệu + OLAP Engine</td>
+                </tr>
+                <tr>
+                    <td>BI + App</td>
+                    <td><span class="badge rose">Power BI · Streamlit · Docker</span></td>
+                    <td style="color:var(--white)">Dashboard + Web App container</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- SLIDE 3: STAR SCHEMA -->
+        <div class="slide" id="slide-3">
+            <div class="slide-label">Chapter II · Mô Hình Dữ Liệu</div>
+            <div class="slide-title"><span class="highlight">Star Schema</span> — BigQuery</div>
+            <div style="display:flex; gap:48px; align-items:center; margin-top:10px;">
+                <!-- Star diagram -->
+                <div class="star-wrap glow">
+                    <!-- Lines from center to dims -->
+                    <svg style="position:absolute;inset:0;width:100%;height:100%;z-index:1;" viewBox="0 0 400 320">
+                        <line x1="200" y1="160" x2="200" y2="60" stroke="rgba(14,165,233,0.3)" stroke-width="1.5"
+                            stroke-dasharray="4" />
+                        <line x1="200" y1="160" x2="200" y2="270" stroke="rgba(14,165,233,0.3)" stroke-width="1.5"
+                            stroke-dasharray="4" />
+                        <line x1="200" y1="160" x2="52" y2="160" stroke="rgba(14,165,233,0.3)" stroke-width="1.5"
+                            stroke-dasharray="4" />
+                        <line x1="200" y1="160" x2="350" y2="160" stroke="rgba(14,165,233,0.3)" stroke-width="1.5"
+                            stroke-dasharray="4" />
+                    </svg>
+                    <!-- Center Fact -->
+                    <div class="star-center" style="width:150px;">
+                        <div class="star-center-label">FACT TABLE</div>
+                        <div class="star-center-name">Customer 360</div>
+                        <div class="star-center-count">2,000,277 dòng<br>24 cột</div>
+                    </div>
+                    <!-- Dim nodes -->
+                    <div class="dim-node top" style="width:140px;">
+                        <div class="dim-node-name">Dim_User</div>
+                        <div class="dim-node-sub">79,732 rows · ISP, Platform</div>
+                    </div>
+                    <div class="dim-node bottom" style="width:140px;">
+                        <div class="dim-node-name">Dim_Date</div>
+                        <div class="dim-node-sub">61 rows · Timeline Q2/2022</div>
+                    </div>
+                    <div class="dim-node left" style="width:110px;">
+                        <div class="dim-node-name">Dim_Cust</div>
+                        <div class="dim-node-sub">1.92M · Contract</div>
+                    </div>
+                    <div class="dim-node right" style="width:110px;">
+                        <div class="dim-node-name">Dim_Service</div>
+                        <div class="dim-node-sub">7 rows · AppName</div>
+                    </div>
+                </div>
+                <!-- Fact columns -->
+                <div style="flex:1;">
+                    <div
+                        style="font-size:12px;color:var(--cyan);font-weight:700;margin-bottom:12px;letter-spacing:1px;">
+                        FACT_CUSTOMER_360 · Cột Chính</div>
+                    <div style="display:flex;flex-direction:column;gap:7px;">
+                        <div
+                            style="background:var(--glass);border:1px solid var(--glass-border);border-radius:8px;padding:8px 14px;font-size:12px;">
+                            <span style="color:var(--cyan);font-family:'JetBrains Mono';font-size:11px;">FK</span>&nbsp;
+                            Profile_ID · service_key · date_key
+                        </div>
+                        <div
+                            style="background:var(--glass);border:1px solid var(--glass-border);border-radius:8px;padding:8px 14px;font-size:12px;">
+                            <span
+                                style="color:var(--green);font-family:'JetBrains Mono';font-size:11px;">SEARCH</span>&nbsp;
+                            count_prev · count_curr · keyword prev/curr
+                        </div>
+                        <div
+                            style="background:var(--glass);border:1px solid var(--glass-border);border-radius:8px;padding:8px 14px;font-size:12px;">
+                            <span
+                                style="color:var(--amber);font-family:'JetBrains Mono';font-size:11px;">CONTENT</span>&nbsp;
+                            Total_Giai_Tri · Phim_Truyen · The_Thao…
+                        </div>
+                        <div
+                            style="background:var(--glass);border:1px solid var(--glass-border);border-radius:8px;padding:8px 14px;font-size:12px;">
+                            <span
+                                style="color:var(--rose);font-family:'JetBrains Mono';font-size:11px;">LABEL</span>&nbsp;
+                            Active · Taste · MostWatch · Trending_Type
+                        </div>
+                        <div
+                            style="background:var(--glass);border:1px solid var(--glass-border);border-radius:8px;padding:8px 14px;font-size:12px;">
+                            <span
+                                style="color:var(--gray);font-family:'JetBrains Mono';font-size:11px;">SOURCE</span>&nbsp;
+                            log_search / log_content / both
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: ETL STEPS -->
+        <div class="slide" id="slide-4">
+            <div class="slide-label">Chapter III · ETL Pipeline</div>
+            <div class="slide-title">Quy Trình Xử Lý <span class="highlight">4 Bước</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%;max-width:860px;"
+                class="stagger">
+
+                <div class="card c1" style="max-width:100%;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                        <div
+                            style="background:rgba(14,165,233,0.2);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;color:var(--cyan);">
+                            Step 1A</div>
+                        <div style="font-size:13px;font-weight:700;">ETL Log Search</div>
+                    </div>
+                    <div style="font-size:11px;color:var(--gray);line-height:1.6;">
+                        📂 Parquet phân vùng theo ngày<br>
+                        🤖 AI phân loại keyword → thể loại<br>
+                        📏 Window Function tìm keyword phổ biến nhất<br>
+                        ✅ <strong style="color:var(--white)">Output: 79,732 dòng · 9 cột</strong>
+                    </div>
+                </div>
+
+                <div class="card c2" style="max-width:100%;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                        <div
+                            style="background:rgba(13,148,136,0.2);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;color:var(--teal);">
+                            Step 1B</div>
+                        <div style="font-size:13px;font-weight:700;">ETL Log Content</div>
+                    </div>
+                    <div style="font-size:11px;color:var(--gray);line-height:1.6;">
+                        📂 JSON lồng nhau ~2M dòng/tháng<br>
+                        📊 Pivot theo thể loại AppName<br>
+                        🏷 Gán nhãn Active / Taste / MostWatch<br>
+                        ✅ <strong style="color:var(--white)">Output: 1,920,545 dòng · 9 cột</strong>
+                    </div>
+                </div>
+
+                <div class="card c3" style="max-width:100%;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                        <div
+                            style="background:rgba(245,158,11,0.2);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;color:var(--amber);">
+                            Step 2</div>
+                        <div style="font-size:13px;font-weight:700;">Data Modeling</div>
+                    </div>
+                    <div style="font-size:11px;color:var(--gray);line-height:1.6;">
+                        🔗 Full Outer Join 2 nguồn → OBT<br>
+                        ⭐ Bóc tách 1 Fact + 4 Dim Tables<br>
+                        💾 Lưu Parquet columnar format<br>
+                        ✅ <strong style="color:var(--white)">Fact: 2,000,277 dòng · 24 cột</strong>
+                    </div>
+                </div>
+
+                <div class="card c4" style="max-width:100%;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                        <div
+                            style="background:rgba(244,63,94,0.2);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;color:var(--rose);">
+                            Step 3+4</div>
+                        <div style="font-size:13px;font-weight:700;">Load + Stored Procedure</div>
+                    </div>
+                    <div style="font-size:11px;color:var(--gray);line-height:1.6;">
+                        ☁️ Nạp 5 bảng Parquet → BigQuery<br>
+                        ⚡ Stored Procedure tính 6 bảng OLAP<br>
+                        🐳 Docker Compose 1 lệnh deploy<br>
+                        ✅ <strong style="color:var(--white)">6 OLAP tables sẵn sàng phân tích</strong>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- SLIDE 5: OLAP OVERVIEW -->
+        <div class="slide" id="slide-5">
+            <div class="slide-label">Chapter IV · Phân Tích OLAP</div>
+            <div class="slide-title"><span class="highlight">6 Báo Cáo</span> Marketing Analytics</div>
+            <div class="olap-grid stagger">
+
+                <div class="olap-card" style="border-color:rgba(14,165,233,0.2);">
+                    <div class="olap-num" style="color:var(--cyan)">1</div>
+                    <div class="olap-tag" style="color:var(--cyan)">🏆 Loyalty</div>
+                    <div class="olap-name">Category Loyalty</div>
+                    <div class="olap-q">Danh mục nào giữ chân khách hàng tốt nhất?</div>
+                    <div class="olap-insight" style="background:rgba(14,165,233,0.08);color:#7dd3fc;">
+                        Thiếu Nhi & Thể Thao = "ngách vàng" tỷ lệ trung thành cao
+                    </div>
+                </div>
+
+                <div class="olap-card" style="border-color:rgba(16,185,129,0.2);">
+                    <div class="olap-num" style="color:var(--green)">2</div>
+                    <div class="olap-tag" style="color:var(--green)">💎 VIP vs Casual</div>
+                    <div class="olap-name">Power vs Casual</div>
+                    <div class="olap-q">VIP & Casual có sở thích xem khác nhau không?</div>
+                    <div class="olap-insight" style="background:rgba(16,185,129,0.08);color:#6ee7b7;">
+                        Phim Truyện = "chất kích hoạt" biến Casual → VIP
+                    </div>
+                </div>
+
+                <div class="olap-card" style="border-color:rgba(245,158,11,0.2);">
+                    <div class="olap-num" style="color:var(--amber)">3</div>
+                    <div class="olap-tag" style="color:var(--amber)">🎯 Diversity</div>
+                    <div class="olap-name">Taste Diversity</div>
+                    <div class="olap-q">VIP có xem đa dạng thể loại hơn không?</div>
+                    <div class="olap-insight" style="background:rgba(245,158,11,0.08);color:#fde68a;">
+                        Xem đa dạng → gắn kết lâu dài hơn. Cần Recommendation Engine
+                    </div>
+                </div>
+
+                <div class="olap-card" style="border-color:rgba(244,63,94,0.2);">
+                    <div class="olap-num" style="color:var(--rose)">4</div>
+                    <div class="olap-tag" style="color:var(--rose)">📈 Growth</div>
+                    <div class="olap-name">Search Growth</div>
+                    <div class="olap-q">Thể loại nào đang "nóng" và "nguội"?</div>
+                    <div class="olap-insight" style="background:rgba(244,63,94,0.08);color:#fca5a5;">
+                        Horror +1000% · K Drama bùng nổ. Comedy bão hòa
+                    </div>
+                </div>
+
+                <div class="olap-card" style="border-color:rgba(168,85,247,0.2);">
+                    <div class="olap-num" style="color:#a855f7">5</div>
+                    <div class="olap-tag" style="color:#a855f7">🔀 Migration</div>
+                    <div class="olap-name">Interest Migration</div>
+                    <div class="olap-q">Khách hàng rời bỏ thể loại nào → sang thể loại nào?</div>
+                    <div class="olap-insight" style="background:rgba(168,85,247,0.08);color:#d8b4fe;">
+                        K Drama "hút" người xem từ nhiều mảng → tăng đầu tư
+                    </div>
+                </div>
+
+                <div class="olap-card" style="border-color:rgba(13,148,136,0.2);">
+                    <div class="olap-num" style="color:var(--teal)">6</div>
+                    <div class="olap-tag" style="color:var(--teal)">🗂 Taste Map</div>
+                    <div class="olap-name">Category Taste</div>
+                    <div class="olap-q">Khẩu vị chi tiết nào chiếm ưu thế mỗi nhóm?</div>
+                    <div class="olap-insight" style="background:rgba(13,148,136,0.08);color:#99f6e4;">
+                        "Phim Truyen-Truyen Hinh" = combo #1 → bundle content
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- SLIDE 6: KEY INSIGHTS (Power BI Dashboard and Recap) -->
+        <div class="slide" id="slide-6">
+            <div class="slide-label">Chapter IV · Highlight Insights</div>
+            <div class="slide-title">Phát Hiện Từ <span class="highlight">Dữ Liệu Thực</span></div>
+            
+            <!-- Tabs Navigation -->
+            <div class="pbi-tabs">
+                <button class="pbi-tab active" onclick="switchPbiTab(this, 'dashboard')">📊 Live Dashboard</button>
+                <button class="pbi-tab" onclick="switchPbiTab(this, 'insights')">💡 Khám Phá Chủ Chốt</button>
+            </div>
+
+            <!-- Tab 1: Live Dashboard Panel -->
+            <div id="pbi-panel-dashboard" class="pbi-panel active">
+                <div class="pbi-container">
+                    <div class="pbi-header">
+                        <span class="pbi-dot red"></span>
+                        <span class="pbi-dot yellow"></span>
+                        <span class="pbi-dot green"></span>
+                        <span class="pbi-title">Power BI Service — Interactive Marketing Analytics Dashboard</span>
+                        <a href="https://app.powerbi.com/view?r=eyJrIjoiZmY2NTJkOTgtOWM3Yi00MmQ4LWJiZmUtNjM4YjcwOWQxZWMwIiwidCI6Ijk4YWRhNjgwLWUzZjQtNDhjYi04ZmJiLWM4YjEwY2I5N2FlZCIsImMiOjEwfQ%3D%3D" 
+                           target="_blank" class="pbi-external-btn">
+                            <span>Mở Tab Mới</span> ↗
+                        </a>
+                    </div>
+                    <iframe class="pbi-iframe" 
+                            src="https://app.powerbi.com/view?r=eyJrIjoiZmY2NTJkOTgtOWM3Yi00MmQ4LWJiZmUtNjM4YjcwOWQxZWMwIiwidCI6Ijk4YWRhNjgwLWUzZjQtNDhjYi04ZmJiLWM4YjEwY2I5N2FlZCIsImMiOjEwfQ%3D%3D" 
+                            allowFullScreen="true"></iframe>
+                </div>
+            </div>
+
+            <!-- Tab 2: Key Insights Panel -->
+            <div id="pbi-panel-insights" class="pbi-panel">
+                <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:820px;" class="stagger">
+
+                    <div
+                        style="display:flex;align-items:center;gap:16px;background:var(--glass);border:1px solid var(--glass-border);border-left:3px solid var(--cyan);border-radius:12px;padding:14px 18px;">
+                        <div style="font-size:24px;">📊</div>
+                        <div style="text-align:left;">
+                            <div style="font-size:13px;font-weight:700;margin-bottom:3px;">Truyền Hình thống trị — nhưng không phải "vua giữ chân"</div>
+                            <div style="font-size:12px;color:var(--gray);">1.6M người xem Truyền Hình, nhưng tỷ lệ trung thành thấp hơn Thiếu Nhi & Thể Thao. Quy mô ≠ Chất lượng retention.</div>
+                        </div>
+                        <div class="badge" style="flex-shrink:0;">Line+Column Chart</div>
+                    </div>
+
+                    <div
+                        style="display:flex;align-items:center;gap:16px;background:var(--glass);border:1px solid var(--glass-border);border-left:3px solid var(--green);border-radius:12px;padding:14px 18px;">
+                        <div style="font-size:24px;">🎯</div>
+                        <div style="text-align:left;">
+                            <div style="font-size:13px;font-weight:700;margin-bottom:3px;">Tất cả 14 thể loại đều tăng trưởng tìm kiếm</div>
+                            <div style="font-size:12px;color:var(--gray);">Waterfall chart: Horror & K Drama dẫn đầu +1000%. Không có thể loại nào giảm — thị trường OTT đang bùng nổ.</div>
+                        </div>
+                        <div class="badge green" style="flex-shrink:0;">Waterfall Chart</div>
+                    </div>
+
+                    <div
+                        style="display:flex;align-items:center;gap:16px;background:var(--glass);border:1px solid var(--glass-border);border-left:3px solid var(--amber);border-radius:12px;padding:14px 18px;">
+                        <div style="font-size:24px;">🔀</div>
+                        <div style="text-align:left;">
+                            <div style="font-size:13px;font-weight:700;margin-bottom:3px;">K Drama là "thỏi nam châm" hút người xem đa nguồn</div>
+                            <div style="font-size:12px;color:var(--gray);">Sankey diagram: K Drama nhận dòng di cư từ Drama, Animation, Action, Comedy → Tín hiệu tăng đầu tư bản quyền.</div>
+                        </div>
+                        <div class="badge amber" style="flex-shrink:0;">Sankey Diagram</div>
+                    </div>
+
+                    <div
+                        style="display:flex;align-items:center;gap:16px;background:var(--glass);border:1px solid var(--glass-border);border-left:3px solid var(--rose);border-radius:12px;padding:14px 18px;">
+                        <div style="font-size:24px;">🗺️</div>
+                        <div style="text-align:left;">
+                            <div style="font-size:13px;font-weight:700;margin-bottom:3px;">"Phim Truyen-Truyen Hinh" là khẩu vị combo phổ biến nhất</div>
+                            <div style="font-size:12px;color:var(--gray);">Treemap: người xem phim thường kết hợp Truyền Hình. Bundle 2 thể loại này = tối ưu trải nghiệm người dùng.</div>
+                        </div>
+                        <div class="badge rose" style="flex-shrink:0;">Treemap</div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: KÊTS QUẢ & TRIỂN KHAI -->
+        <div class="slide" id="slide-7">
+            <div class="slide-label">Chapter V · Triển Khai & Kết Luận</div>
+            <div class="slide-title">Kết Quả & <span class="highlight">Giá Trị Thực Tiễn</span></div>
+            <div class="result-row stagger" style="margin-bottom:20px;">
+                <div class="result-item">
+                    <div class="result-big" style="color:var(--cyan)">2M+</div>
+                    <div class="result-label">Bản ghi<br>đã xử lý</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-big" style="color:var(--green)">5</div>
+                    <div class="result-label">Bảng Star Schema<br>trên BigQuery</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-big" style="color:var(--amber)">6</div>
+                    <div class="result-label">Báo cáo OLAP<br>tự động</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-big" style="color:var(--rose)">1</div>
+                    <div class="result-label">Lệnh deploy<br>docker-compose up</div>
+                </div>
+            </div>
+            <div style="display:flex;gap:14px;width:100%;max-width:820px;" class="stagger">
+                <div
+                    style="flex:1;background:var(--glass);border:1px solid var(--glass-border);border-radius:14px;padding:16px;">
+                    <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--cyan);">📊 Power BI
+                        Dashboard</div>
+                    <div style="font-size:12px;color:var(--gray);line-height:1.6;">
+                        2 trang phân tích chuyên sâu<br>
+                        Kết nối trực tiếp với BigQuery<br>
+                        Publish lên Power BI Service
+                    </div>
+                </div>
+                <div
+                    style="flex:1;background:var(--glass);border:1px solid var(--glass-border);border-radius:14px;padding:16px;">
+                    <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--green);">🌐 Streamlit Web
+                        App</div>
+                    <div style="font-size:12px;color:var(--gray);line-height:1.6;">
+                        Nhúng iframe Power BI<br>
+                        C-level xem báo cáo qua web<br>
+                        Không cần cài phần mềm
+                    </div>
+                </div>
+                <div
+                    style="flex:1;background:var(--glass);border:1px solid var(--glass-border);border-radius:14px;padding:16px;">
+                    <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--amber);">🐳 Docker
+                        Container</div>
+                    <div style="font-size:12px;color:var(--gray);line-height:1.6;">
+                        Python 3.11 + Java JRE + Spark<br>
+                        2 service: pipeline + dashboard<br>
+                        Chạy mọi môi trường, 1 lệnh
+                    </div>
+                </div>
+            </div>
+            <div class="insight-box stagger" style="margin-top:16px;">
+                <p><strong>🎯 Kết luận:</strong> Hệ thống Data Pipeline E2E hoàn chỉnh — áp dụng Big Data (PySpark),
+                    Cloud DW (BigQuery), AI (Vertex AI), và Data Modeling chuẩn (Star Schema). 6 báo cáo OLAP cung cấp
+                    insight hành động cụ thể cho Marketing: loyalty, chuyển đổi VIP, xu hướng search, và dòng dịch
+                    chuyển sở thích.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let current = 0;
+        const total = 8;
+
+        // Cursor
+        const cursor = document.getElementById('cursor');
+        document.addEventListener('mousemove', e => {
+            cursor.style.left = e.clientX - 5 + 'px';
+            cursor.style.top = e.clientY - 5 + 'px';
+        });
+
+        // Build dots
+        const dotsEl = document.getElementById('dots');
+        for (let i = 0; i < total; i++) {
+            const d = document.createElement('div');
+            d.className = 'dot' + (i === 0 ? ' active' : '');
+            d.onclick = () => goTo(i);
+            dotsEl.appendChild(d);
+        }
+
+        function updateDots() {
+            document.querySelectorAll('.dot').forEach((d, i) => {
+                d.className = 'dot' + (i === current ? ' active' : '');
+            });
+        }
+
+        function goTo(n) {
+            if (n < 0 || n >= total) return;
+            const prev = document.getElementById(`slide-${current}`);
+            prev.classList.remove('active');
+            prev.classList.add('exit');
+            setTimeout(() => prev.classList.remove('exit'), 500);
+
+            current = n;
+            const next = document.getElementById(`slide-${current}`);
+            next.classList.add('active');
+            updateDots();
+            document.getElementById('slideNum').textContent = current + 1;
+            updateProgressBar();
+        }
+
+        function nextSlide() { goTo((current + 1) % total); }
+        function prevSlide() { goTo((current - 1 + total) % total); }
+
+        // Keyboard nav
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowRight' || e.key === 'Space') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        // Auto progress bar
+        function updateProgressBar() {
+            const pct = ((current + 1) / total) * 100;
+            document.getElementById('progressBar').style.width = pct + '%';
+        }
+
+        // Tab switching for Power BI
+        function switchPbiTab(btn, tabId) {
+            document.querySelectorAll('.pbi-tab').forEach(b => {
+                b.classList.remove('active');
+            });
+            btn.classList.add('active');
+
+            document.querySelectorAll('.pbi-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            document.getElementById(`pbi-panel-${tabId}`).classList.add('active');
+        }
+
+        updateProgressBar();
+    </script>
+</body>
+
+</html>

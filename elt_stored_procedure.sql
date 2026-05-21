@@ -1,10 +1,13 @@
+-- ============================================
+-- PROCEDURE 1: PHÂN TÍCH CONTENT (XEM PHIM/KÊNH)
+-- ============================================
 CREATE OR REPLACE PROCEDURE `cms_data_warehouse.sp_olap_content`()
 BEGIN
   DECLARE max_date INT64;
   DECLARE min_date INT64;
 
   SET max_date = (
-    SELECT MAX(date_key)
+    SELECT MAX(snapshot_date_key)
     FROM `cms_data_warehouse.fact_customer_360`
     WHERE data_source = 'log_content'
   );
@@ -29,7 +32,7 @@ BEGIN
   FROM `cms_data_warehouse.fact_customer_360` f
   JOIN `cms_data_warehouse.dim_service` ds ON f.service_key = ds.service_key
   WHERE f.data_source = 'log_content'
-    AND f.date_key BETWEEN min_date AND max_date
+    AND f.snapshot_date_key BETWEEN min_date AND max_date
   GROUP BY ds.category_group, ds.Type
   ORDER BY TiLe_TrungThanh DESC;
 
@@ -48,11 +51,11 @@ BEGIN
   JOIN `cms_data_warehouse.dim_service` ds ON f.service_key = ds.service_key
   WHERE f.data_source = 'log_content'
     AND f.Taste IS NOT NULL
-    AND f.date_key BETWEEN min_date AND max_date
+    AND f.snapshot_date_key BETWEEN min_date AND max_date
   GROUP BY ds.category_group, ds.Type, f.Taste
   ORDER BY ds.Type, PhanTram_TrongCategory DESC;
 
-  -- 3. Power User vs Casual User — JOIN dim_service (BẢNG MỚI thay thế bảng cũ)
+  -- 3. Power User vs Casual User — JOIN dim_service
   CREATE OR REPLACE TABLE `cms_data_warehouse.olap_power_vs_casual` AS
   SELECT
     f.Active                                                         AS UserType,
@@ -66,11 +69,11 @@ BEGIN
   FROM `cms_data_warehouse.fact_customer_360` f
   JOIN `cms_data_warehouse.dim_service` ds ON f.service_key = ds.service_key
   WHERE f.data_source = 'log_content'
-    AND f.date_key BETWEEN min_date AND max_date
+    AND f.snapshot_date_key BETWEEN min_date AND max_date
   GROUP BY f.Active, ds.category_group, ds.Type
   ORDER BY f.Active, TongUser DESC;
 
-  -- 4. Taste Diversity — Đa chiều nội dung (BẢNG MỚI)
+  -- 4. Taste Diversity — Đa chiều nội dung
   CREATE OR REPLACE TABLE `cms_data_warehouse.olap_taste_diversity` AS
   SELECT
     CASE 
@@ -88,7 +91,7 @@ BEGIN
   FROM `cms_data_warehouse.fact_customer_360` f
   WHERE f.data_source = 'log_content'
     AND f.Taste IS NOT NULL
-    AND f.date_key BETWEEN min_date AND max_date
+    AND f.snapshot_date_key BETWEEN min_date AND max_date
   GROUP BY SoTheLoaiXem, f.Active
   ORDER BY SoTheLoaiXem;
 
@@ -105,7 +108,7 @@ BEGIN
   DECLARE days_in_prev_month INT64;
 
   SET max_date = (
-    SELECT MAX(date_key)
+    SELECT MAX(snapshot_date_key)
     FROM `cms_data_warehouse.fact_customer_360`
     WHERE data_source = 'log_search'
   );
@@ -134,7 +137,7 @@ BEGIN
   WHERE data_source = 'log_search'
     AND category_prev IS NOT NULL
     AND category_curr IS NOT NULL
-    AND date_key BETWEEN min_date AND max_date
+    AND snapshot_date_key BETWEEN min_date AND max_date
   GROUP BY category_prev
   ORDER BY PhanTram_TangTruong DESC;
 
@@ -153,70 +156,13 @@ BEGIN
     AND Trending_Type = 'Changed'
     AND category_prev IS NOT NULL
     AND category_curr IS NOT NULL
-    AND date_key BETWEEN min_date AND max_date
+    AND snapshot_date_key BETWEEN min_date AND max_date
   GROUP BY category_prev, category_curr
   ORDER BY TongUser DESC;
 
 END;
 
--- ============================================
--- PROCEDURE 3: CROSS-ANALYSIS + OVERVIEW (JOIN CẢ DIM_SERVICE VÀ DIM_DATE)
--- ============================================
-CREATE OR REPLACE PROCEDURE `cms_data_warehouse.sp_olap_cross`()
-BEGIN
-  DECLARE max_date INT64;
-  DECLARE min_date INT64;
 
-  SET max_date = (
-    SELECT MAX(date_key) FROM `cms_data_warehouse.fact_customer_360`
-  );
-
-  SET min_date = CAST(
-    FORMAT_DATE('%Y%m%d', DATE_TRUNC(DATE_SUB(PARSE_DATE('%Y%m%d', CAST(max_date AS STRING)), INTERVAL 1 MONTH), MONTH)) 
-    AS INT64
-  );
-
-  -- 7. Executive Summary KPIs — JOIN dim_date để lấy thông tin Tháng/Năm snapshot động
-  CREATE OR REPLACE TABLE `cms_data_warehouse.olap_executive_summary` AS
-  SELECT
-    dd.month_name                                                    AS ThangSnapshot,
-    dd.year                                                          AS NamSnapshot,
-    COUNT(DISTINCT CASE WHEN f.data_source IN ('log_content','both_search_and_content') 
-          THEN f.Profile_ID END)                                     AS TotalContentUsers,
-    COUNT(DISTINCT CASE WHEN f.data_source IN ('log_content','both_search_and_content') AND f.Active = 'High' 
-          THEN f.Profile_ID END)                                     AS TotalPowerUsers,
-    COUNT(DISTINCT CASE WHEN f.data_source IN ('log_search','both_search_and_content') 
-          THEN f.Profile_ID END)                                     AS TotalSearchUsers,
-    COUNT(DISTINCT CASE WHEN f.Trending_Type = 'Changed' 
-          THEN f.Profile_ID END)                                     AS UsersChangedInterest,
-    COUNT(DISTINCT CASE WHEN f.data_source = 'both_search_and_content' 
-          THEN f.Profile_ID END)                                     AS UsersBothSources,
-    COUNT(DISTINCT f.Profile_ID)                                     AS TotalUniqueUsers
-  FROM `cms_data_warehouse.fact_customer_360` f
-  JOIN `cms_data_warehouse.dim_date` dd ON f.date_key = dd.date_key
-  WHERE f.date_key BETWEEN min_date AND max_date
-  GROUP BY dd.month_name, dd.year;
-
-  -- 8. Search vs Watch — JOIN dim_service (CROSS-ANALYSIS)
-  CREATE OR REPLACE TABLE `cms_data_warehouse.olap_search_vs_watch` AS
-  SELECT
-    f.category_curr                                                  AS SearchCategory,
-    ds.category_group                                                AS WatchCategoryGroup,
-    ds.Type                                                          AS WatchCategory,
-    COUNT(DISTINCT f.Profile_ID)                                     AS TongUser,
-    CASE 
-      WHEN f.category_curr = ds.Type THEN 'Khớp'
-      ELSE 'Lệch'
-    END                                                              AS MatchStatus
-  FROM `cms_data_warehouse.fact_customer_360` f
-  JOIN `cms_data_warehouse.dim_service` ds ON f.service_key = ds.service_key
-  WHERE f.data_source = 'both_search_and_content'
-    AND f.category_curr IS NOT NULL
-    AND f.date_key BETWEEN min_date AND max_date
-  GROUP BY f.category_curr, ds.category_group, ds.Type
-  ORDER BY TongUser DESC;
-
-END;
 
 -- ============================================
 -- MASTER PIPELINE
@@ -226,7 +172,6 @@ OPTIONS (strict_mode=false)
 BEGIN
   CALL `cms_data_warehouse.sp_olap_content`();
   CALL `cms_data_warehouse.sp_olap_search`();
-  CALL `cms_data_warehouse.sp_olap_cross`();
 END;
 
 CALL `cms_data_warehouse.sp_run_pipeline`();

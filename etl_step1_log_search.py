@@ -245,10 +245,10 @@ def extract_unique_keywords(result_df,
                             col_prev="most_searched_prev", 
                             col_count_prev="count_prev",
                             col_curr="most_searched_curr", 
-                            limit_prev=2000,
-                            limit_curr=2000,
-                            offset_prev=1000,
-                            offset_curr=1000):
+                            limit_prev=10000,
+                            limit_curr=10000,
+                            offset_prev=3000,
+                            offset_curr=3000):
     """Trích xuất keyword: Lấy các dòng tiếp theo (bỏ qua offset) bằng cách dùng Window function."""
     
     # Tháng trước: tính tổng, sort theo popularity (giảm dần) và lấy theo offset & limit
@@ -393,8 +393,8 @@ def maintask(path, start_date, to_date, output_path):
     result = get_top_keywords(df_prev, df_curr)
     
     print("------------- Trích xuất và Phân loại Keyword bằng AI --------------")
-    # unique_keywords_df = extract_unique_keywords(result)
-    # classify_keywords_from_df(unique_keywords_df)
+    unique_keywords_df = extract_unique_keywords(result)
+    classify_keywords_from_df(unique_keywords_df)
 
     print("------------- Map với từ điển Category --------------")
     mapped_result = map_categories_to_result(result)
